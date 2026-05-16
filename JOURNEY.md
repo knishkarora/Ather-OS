@@ -50,3 +50,23 @@ grows.
 This is intentionally small. Before writing engine code, the project needs a
 clear shape so every future file has a natural place to live.
 
+## Checkpoint 2: Backend Skeleton Setup
+
+We created the backend Python project structure under `backend/src/ather_os/`.
+
+The folders match the main Phase 0 engine responsibilities:
+
+- `api` for FastAPI endpoints
+- `dag` for workflow models and validation
+- `state` for event storage
+- `checkpoint` for replay and recovery
+- `cache` for idempotent task outputs
+- `providers` for mock execution now and real model routing later
+- `queue` for local in-memory task dispatch now and Redis later
+- `worker` for executing ready tasks
+- `config` for environment-driven settings
+
+We also added `backend/tests/`, `backend/samples/`, and a root `.gitignore`.
+
+This setup is not business logic yet. It gives the project a clean shape so that
+when we start implementing real behavior, each file has an obvious home.
