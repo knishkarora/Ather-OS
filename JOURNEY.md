@@ -36,37 +36,56 @@ remote infrastructure. Phase 0 will prove the foundation first:
 - an in-process worker
 - a small API for running and inspecting workflows
 
-## Checkpoint 1: Project Structure Begins
+## Day 1: Sunday, 17 May
 
-We started by creating the first project folders:
+We started by giving Ather OS its first real project shape.
 
-- `backend/` for the execution engine
-- `frontend/` for the future interface
+What we completed:
 
-We also added a root `README.md` so the project has a simple entry point, and
-this `JOURNEY.md` file so the learning path can be documented as the project
-grows.
+- added `backend/` for the execution engine
+- added `frontend/` for the future user interface
+- added the root `README.md`
+- created `JOURNEY.md` to record meaningful learning checkpoints
+- created the backend Python project setup with `pyproject.toml`
+- added the backend package skeleton under `backend/src/ather_os/`
+- created the first real logic file: `backend/src/ather_os/dag/models.py`
+- created a backend virtual environment
+- installed FastAPI, Pydantic, Uvicorn, and Pytest
+- confirmed that the DAG models can be imported successfully
 
-This is intentionally small. Before writing engine code, the project needs a
-clear shape so every future file has a natural place to live.
+The main lesson from today: before writing complex logic, a serious project
+needs shape. The folder structure, package setup, and first models are not
+flashy, but they create the ground where the real engine can grow.
 
-## Checkpoint 2: Backend Skeleton Setup
+Session ended at 3:44 a.m.
 
-We created the backend Python project structure under `backend/src/ather_os/`.
+## Future Journey Updates
 
-The folders match the main Phase 0 engine responsibilities:
+This file should stay readable. We will not update it after every tiny edit.
+Instead, we will update it after meaningful checkpoints, such as:
 
-- `api` for FastAPI endpoints
-- `dag` for workflow models and validation
-- `state` for event storage
-- `checkpoint` for replay and recovery
-- `cache` for idempotent task outputs
-- `providers` for mock execution now and real model routing later
-- `queue` for local in-memory task dispatch now and Redis later
-- `worker` for executing ready tasks
-- `config` for environment-driven settings
+- a complete module is added
+- a feature starts working end to end
+- a design decision changes the direction of the project
+- a useful test, API call, terminal output, or frontend screen proves progress
 
-We also added `backend/tests/`, `backend/samples/`, and a root `.gitignore`.
+Future screenshots and visual proof should go inside:
 
-This setup is not business logic yet. It gives the project a clean shape so that
-when we start implementing real behavior, each file has an obvious home.
+`docs/journey-assets/`
+
+When we add screenshots later, they can be embedded directly in this file near
+the checkpoint they belong to.
+
+---
+
+<p align="center">
+  <strong>Journey continues above this line.</strong>
+</p>
+
+<p align="center">
+  <em>Build slowly. Think clearly. Keep returning to the work.</em>
+</p>
+
+<p align="center">
+  <sub>End of Ather OS Journey Log</sub>
+</p>
