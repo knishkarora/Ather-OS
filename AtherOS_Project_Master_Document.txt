@@ -1,0 +1,469 @@
+
+================================================================================
+                           Ather OS — PROJECT MASTER DOCUMENT
+                    Resilient, Cost-Aware Autonomous AI Execution Engine
+================================================================================
+
+VISION
+------
+Build a resilient, cost-aware AI execution engine that breaks high-level goals 
+into deterministic micro-tasks, executes them autonomously at near-zero cost, 
+and recovers from any failure without human intervention. 
+
+Designed to scale from a single laptop to a multi-agent network without 
+rewriting core logic.
+
+THE FIVE PROBLEMS
+-----------------
+1. THE HUMAN ANCHOR PROBLEM
+   Current AI tools require a browser tab to stay open. If your machine sleeps, 
+   the work dies. There is no persistent execution substrate.
+
+2. THE STATE AMNESIA PROBLEM
+   Long workflows exceed context windows. Tools dump entire chat histories into 
+   prompts, causing bloat, cost explosion, and degraded output quality.
+
+3. THE COST CLIFF PROBLEM
+   Prototyping is free; scaling is $200/month. No system dynamically downgrades 
+   model quality for simple subtasks to stay within a budget.
+
+4. THE MODEL MISMATCH PROBLEM
+   Different models excel at different tasks, but users manually pick one and 
+   pray. No system routes subtasks based on task type + cost + availability.
+
+5. THE BLACK BOX PROBLEM
+   When AI workflows fail, there is no audit trail. You cannot debug what ran, 
+   where it broke, or how much it cost.
+
+================================================================================
+                         ARCHITECTURAL PRINCIPLES
+================================================================================
+
+1. STORAGE INTERFACE ABSTRACTION
+   The engine never talks to SQLite/PostgreSQL/Redis directly. It talks to a 
+   StateStore and QueueBroker interface. Day 1: SQLite + in-memory queue for 
+   local dev. Day N: PostgreSQL + Redis for remote mode. Zero core rewrites.
+
+2. EVENT SOURCING OVER STATE OVERWRITES
+   We never update a row to say "task is done." We append an event. If we crash, 
+   we replay events. This is real recovery.
+
+3. CONFIG-DRIVEN PROVIDER REGISTRY
+   No provider is hardcoded. Every model is a plugin entry in a YAML registry 
+   with declared capabilities, cost, and rate limits.
+
+4. DETERMINISTIC ROUTING
+   Model selection is a math function: score = f(cost, quality, latency, 
+   availability). Not an LLM prompt. We do not use an oracle to choose an oracle.
+
+5. DAG VALIDATION AT INGESTION
+   If the generated task graph has a cycle or an unreachable node, we reject it 
+   before execution starts.
+
+6. EXECUTION MODE DUALITY
+   The engine runs in local_mode (free, laptop, SQLite) and remote_mode 
+   (free VPS, PostgreSQL, Redis) with a single env var switch.
+
+7. DEFENSIVE LLM ORCHESTRATION
+   Every LLM output that becomes system structure passes through schema 
+   validation -> retry loop -> DAG validation. Never trust the LLM to generate 
+   valid system state.
+
+================================================================================
+                         COMPONENT BREAKDOWN
+================================================================================
+
+----------------------------------------
+1. ORCHESTRATOR — THE BRAIN
+----------------------------------------
+A FastAPI service that accepts a high-level goal and returns a validated, 
+serialized DAG.
+
+Input:  "Build a landing page for a coffee shop"
+Output: Directed Acyclic Graph (DAG) where each node is a Task object:
+
+  {
+    "task_id": "uuid",
+    "type": "code_generation",
+    "prompt": "...",
+    "dependencies": ["uuid-of-research-task"],
+    "context_needs": ["research_task.output"],
+    "estimated_tokens": 2000,
+    "quality_tier": "standard"
+  }
+
+DEFENSIVE VALIDATION (Three-Layer Defense):
+  Layer 1 — Schema Enforcement: LLM output must parse against a strict Pydantic 
+            schema. Parse failure triggers re-prompt with validation error.
+  Layer 2 — Structural Validator: Checks for cycles, orphaned nodes, invalid 
+            dependency IDs, and missing required fields.
+  Layer 3 — Sandbox Mode (Stage 0): DAG loaded from JSON files. No LLM calls 
+            until the engine is proven stable.
+
+Max 3 retries on LLM DAG generation, then fail the workflow request cleanly.
+
+----------------------------------------
+2. CHECKPOINT ENGINE — FAULT TOLERANCE
+----------------------------------------
+An event-sourced state machine. Not a database updater. An event logger.
+
+Events appended after every micro-task:
+  - TaskClaimed
+  - TaskExecuted
+  - TaskSucceeded
+  - TaskFailed
+  - TaskRetried
+
+Current state = fold/reduce of all events for that workflow ID.
+
+Crash Recovery:
+  - Query all events for workflow_id.
+  - Reconstruct DAG state.
+  - Identify last successfully completed node.
+  - Resume from first pending node.
+
+Idempotency via Response Cache:
+  - Cache key = hash(task_id + prompt_hash + provider_name + model_name)
+  - Cache hit  -> return cached output. Zero API cost.
+  - Cache miss -> call provider, store result with 7-day TTL.
+  - On recovery: if event log says TaskRunning but cache has result, emit 
+    retroactive TaskSucceeded and move on.
+
+----------------------------------------
+3. PROVIDER ROUTER — INTELLIGENT COST CONTROL
+----------------------------------------
+Deterministic scoring router. No LLM chooses an LLM.
+
+STEP A — Provider Registry (Config-Driven YAML):
+  providers:
+    - name: groq-llama3.3-70b
+      cost_per_1k_input: 0.0
+      cost_per_1k_output: 0.0
+      rate_limit_rpm: 30
+      capabilities: [coding, reasoning, chat]
+      quality_score: 7.5
+      is_free_tier: true
+      fallback_on_429: nvidia-nim-llama3.1
+
+  Adding a provider: Edit YAML. Restart. Zero code changes.
+
+STEP B — Task Classifier (Rule-Based, O(1) Lookup):
+  Task carries metadata tags from Orchestrator:
+    type, complexity, latency_sensitive, requires_long_context
+
+  Lookup table maps task metadata -> required capabilities and minimum thresholds.
+  No LLM is invoked here.
+
+STEP C — Scoring Function:
+  score = (quality_score * quality_weight)
+        - (estimated_cost * cost_weight)
+        - (avg_latency_ms * latency_weight)
+        - (failure_rate * penalty_weight)
+
+  Modes:
+    Zero-Cost Mode:  cost_weight = 100, quality_weight = 1
+    Quality Mode:    quality_weight = 100, cost_weight = 1
+    Balanced Mode:   Default weights
+
+  Highest score wins. On failure, automatically tries next highest score.
+
+STEP D — Feedback Loop (Stage 3):
+  Log per run: actual_cost, actual_latency, success/failure, quality_score.
+  Update provider quality_score and avg_latency via exponential moving average.
+  After N runs, router learns which model performs best per task type.
+
+ADDITIONAL PROTECTIONS:
+  - Circuit Breaker: Provider fails 3 times in 2 min -> circuit opens for 60s.
+    All workers skip it. One worker probes after cooldown.
+  - Distributed Rate Limiter: Redis token bucket per provider. All workers 
+    respect the same global RPM cap.
+
+----------------------------------------
+4. SELECTIVE CONTEXT MANAGER — NO MORE BLOAT
+----------------------------------------
+Injects only what the task explicitly declares it needs.
+
+  - Task has context_needs array: ["task_a.output", "task_b.artifacts"]
+  - Context manager queries event store for only those specific outputs.
+  - Assembles prompt payload containing ONLY requested dependencies.
+  - For long-running projects: lightweight vector cache retrieves semantically 
+    relevant past outputs only when task declares requires_historical_context.
+
+Result: Prompts stay lean. Token costs stay low. Model performance stays high.
+
+----------------------------------------
+5. ASYNC TASK WORKER — HEADLESS OPERATION
+----------------------------------------
+Celery worker pool completely decoupled from the API layer.
+
+Flow:
+  1. Submit workflow via API/UI.
+  2. Orchestrator writes DAG event.
+  3. Task pushed to Redis queue.
+  4. Celery worker picks up task, executes via Provider Router.
+  5. Worker writes result event back to PostgreSQL.
+
+You can close your laptop. If worker runs on a VPS, it keeps running. If local, 
+task pauses but resumes from last event on restart — no data loss.
+
+----------------------------------------
+6. AUDIT LOG + DASHBOARD — TRANSPARENCY
+----------------------------------------
+Every event is a structured log entry containing:
+  task_id, provider_used, model_used, prompt_hash, tokens_in, tokens_out, 
+  cost_usd, latency_ms, output_hash, status
+
+React dashboard reads from PostgreSQL/SQLite via WebSocket:
+  - Real-time feed: tasks moving pending -> running -> done
+  - Post-execution trace: exact path through DAG, which model ran what, 
+    where costs accrued
+
+Result: Zero black boxes. Full debuggability.
+
+================================================================================
+                         EXECUTION MODE DUALITY
+================================================================================
+
+  FEATURE              |  LOCAL_MODE          |  REMOTE_MODE
+  ---------------------|----------------------|---------------------------
+  Use Case             |  Development, testing|  "Close laptop" demo, prod
+  State Store          |  SQLite (file)       |  PostgreSQL (Neon free)
+  Queue Broker         |  In-memory/SQLite    |  Redis (Redis Cloud free)
+  Worker               |  In-process async    |  Celery worker pool
+  Dashboard            |  Localhost only      |  Public (Oracle Cloud VM)
+  Infrastructure Cost  |  $0                  |  $0 (Oracle Cloud free tier)
+
+Switch: Ather OS_EXECUTION_MODE=local|remote
+Factory pattern instantiates correct StateStore and QueueBroker.
+
+================================================================================
+                         FREE INFRASTRUCTURE STACK
+================================================================================
+
+  COMPONENT          |  FREE OPTION                  |  USE CASE
+  -------------------|-------------------------------|------------------------
+  VPS / Worker Host  |  Oracle Cloud Free Tier       |  Remote Celery worker
+                     |  (2 AMD cores, 1GB RAM,       |  (permanently free)
+                     |   2 VMs forever)
+  Dashboard Host     |  Oracle Cloud Free Tier       |  Public React dashboard
+                     |  (second free VM)             |  (no cold starts)
+  Database (Remote)  |  Neon PostgreSQL Free Tier    |  Remote mode state store
+                     |  (500MB, 190 compute hrs/mo)  |
+                     |  *Neon pauses compute on      |  Mitigated by local_mode
+                     |   limit. Use local_mode for   |  fallback for dev.
+                     |   development to stay under.* |
+  Queue (Remote)     |  Redis Cloud Free Tier        |  Remote mode broker
+                     |  (30MB, 1 database)           |
+  Local Dev          |  SQLite + in-memory queue     |  Local mode development
+                     |  (zero setup, zero cost)      |
+
+================================================================================
+                    DAG DECOMPOSITION PROMPT (STAGE 1)
+================================================================================
+
+The orchestrator sends the user's high-level goal to Groq Llama with a 
+structured system prompt that constrains the output to a valid DAG JSON.
+
+SYSTEM PROMPT STRUCTURE:
+
+  You are a task decomposition engine. Your job is to break a high-level goal 
+  into a Directed Acyclic Graph (DAG) of micro-tasks.
+
+  OUTPUT FORMAT: Return ONLY a valid JSON object. No markdown, no explanation.
+
+  JSON SCHEMA:
+  {
+    "workflow_id": "auto-generated-uuid",
+    "goal": "original user goal",
+    "tasks": [
+      {
+        "task_id": "uuid-v4",
+        "type": "research|code_generation|writing|analysis|validation",
+        "prompt": "detailed instruction for this task",
+        "dependencies": ["task_id-of-prerequisite"],
+        "context_needs": ["dependency_task_id.output_field"],
+        "estimated_tokens": integer,
+        "quality_tier": "draft|standard|polished",
+        "max_retries": 2
+      }
+    ]
+  }
+
+  CONSTRAINTS (STRICTLY ENFORCED):
+  1. MAX 20 tasks per workflow. If the goal requires more, consolidate.
+  2. The DAG must be acyclic. No task may depend on itself, directly or 
+     indirectly. The dependencies array must only reference task_ids that exist 
+     in the tasks list.
+  3. Every task must have a non-empty prompt field.
+  4. Every task must declare its type from the allowed enum.
+  5. The first task must have empty dependencies (it is the root).
+  6. No orphaned tasks. Every task must be reachable from the root via 
+     dependency chains.
+  7. estimated_tokens must be a positive integer <= 8000.
+  8. context_needs must reference only fields that the dependency task is 
+     expected to produce.
+
+  FAILURE HANDLING: If you cannot decompose the goal into a valid DAG under 
+  these constraints, return {"error": "Cannot decompose: <reason>"}.
+
+WHY THIS MATTERS:
+  This prompt is the most failure-prone part of the entire system. Without 
+  strict constraints, the LLM hallucinates task structures, emits invalid JSON, 
+  creates circular dependencies, or omits required fields. The three-layer 
+  defense (schema enforcement -> structural validation -> retry loop) exists 
+  precisely because this prompt alone is not enough. But a tightly constrained 
+  prompt reduces the failure rate from ~30% to ~5%, making the retry loop 
+  practical.
+
+================================================================================
+                         STAGE BREAKDOWN
+================================================================================
+
+  >>> STAGES 0 AND 1 ARE "BUILT / BUILDING" — THESE EXIST IN CODE <<<
+  >>> STAGES 2, 3, AND 4 ARE "FUTURE ROADMAP" — NOT YET IMPLEMENTED <<<
+
+----------------------------------------
+STAGE 0: ENGINE FOUNDATION  [BUILT]
+----------------------------------------
+Goal: Working local engine executing a hardcoded 5-step DAG with crash recovery.
+
+What Exists:
+  - Storage interface + SQLite implementation
+  - Event schema + event sourcing logic
+  - DAG validator (cycle detection, orphan detection)
+  - Checkpoint engine with replay logic
+  - Response cache for idempotency
+  - Provider router interface + mock provider
+  - Local async worker (in-process)
+  - Basic REST API to submit workflows
+
+Demo: "5-step workflow. Kill process at step 3. Restart. It resumes and 
+       completes steps 4-5."
+
+No LLM calls in Stage 0. DAG loaded from JSON files. Prove engine before 
+adding LLM fragility.
+
+----------------------------------------
+STAGE 1: AUTONOMOUS EXECUTION WITH REAL LLMs  [BUILDING]
+----------------------------------------
+Goal: Full "close your laptop" system with real providers and remote mode.
+
+What Exists / Being Built:
+  - LLM Orchestrator: Groq Llama generates DAG via constrained decomposition 
+    prompt with three-layer defense
+  - Provider Registry: YAML config with Groq, Nvidia NIM, Together AI, 
+    Anthropic fallback
+  - Deterministic Router: Scoring function with cost/quality/latency weights
+  - Rate Limiter: Redis token bucket for distributed rate limiting
+  - Remote Mode: Deployed to Oracle Cloud Free Tier (2 VMs) + Neon + Redis Cloud
+  - Celery Worker: Replaces in-process worker
+  - Audit Dashboard: React UI on second Oracle VM, no cold starts
+
+Demo: "Submit 20-step research goal. Close laptop. Worker on Oracle Cloud 
+       continues. Open dashboard on phone an hour later — done, $0.00 spent, 
+       full event log available."
+
+This is the resume headline. Everything below is future roadmap.
+
+----------------------------------------
+STAGE 2: INTELLIGENT MEMORY & CONTEXT  [FUTURE ROADMAP]
+----------------------------------------
+Goal: Long projects survive across sessions without context loss.
+
+Planned:
+  - Selective context injection (context_needs declarations)
+  - Project memory layer (artifacts table retrievable across restarts)
+  - Context budget manager (token limit enforcement + auto-summarization)
+  - Multi-session continuity (pause/resume via API)
+
+New Capability: 7-day autonomous projects. Build a product over a week in 
+nightly runs. System remembers what it built yesterday.
+
+----------------------------------------
+STAGE 3: ADAPTIVE ROUTING + COST INTELLIGENCE  [FUTURE ROADMAP]
+----------------------------------------
+Goal: Router learns from history and optimizes automatically.
+
+Planned:
+  - Feedback loop table (provider performance history)
+  - Dynamic score updates (exponential moving average)
+  - Budget mode (max_budget_usd per workflow)
+  - Quality vs Speed slider (user-declared priority adjusts weights)
+  - LLM-as-judge: OPT-IN ONLY, disabled by default. Uses cheapest model 
+    when enabled.
+
+New Capability: After 20 runs, system knows Groq is 40% cheaper for code tasks 
+than fallback and automatically prefers it.
+
+----------------------------------------
+STAGE 4: MULTI-AGENT COLLABORATION + EXTERNAL TOOLS  [FUTURE ROADMAP]
+----------------------------------------
+Goal: Transform from single orchestrator into a network of specialized agents.
+
+Planned:
+  - Specialized sub-agents: Researcher, Coder, Writer, QA — each with own 
+    model preference and tool access
+  - Tool Use: Web search, file I/O, external API calls
+  - Code Execution: ONLY if properly sandboxed (gVisor/Firejail inside Docker).
+    If not ready to implement securely, scope excludes code execution and 
+    sticks to code generation only.
+  - Agent handoff protocol: Structured output from Agent A becomes structured 
+    input for Agent B. No free-text context loss.
+  - Parallel execution: Independent DAG branches run simultaneously across 
+    multiple workers
+  - Human approval gates: Optional checkpoints pausing for human review before 
+    critical steps
+
+What this becomes: A personal AI operations center. Describe a month-long 
+project. Ather OS decomposes it, assigns agents, runs nightly, produces real 
+deliverables.
+
+================================================================================
+                         HOW TO EXPLAIN THIS
+================================================================================
+
+FOR A RECRUITER:
+  "I built a resilient AI execution engine with event-sourced checkpoint 
+   recovery, a config-driven model router with deterministic cost scoring, 
+   and a DAG-based task scheduler. It runs multi-step workflows autonomously 
+   at near-zero cost by intelligently routing subtasks across free-tier LLM 
+   providers."
+
+FOR A TECHNICAL INTERVIEWER:
+  "The core is an event-sourced state machine in PostgreSQL. Every task state 
+   change is an append-only event. On crash, we replay the event log to 
+   reconstruct state and resume from the last successful checkpoint. Task 
+   outputs are cached by content hash, making retries idempotent and free. 
+   The orchestrator uses a three-layer defense against LLM fragility: Pydantic 
+   schema validation, structural DAG validation for cycles and orphans, and 
+   a re-prompt retry loop. The provider router uses a deterministic scoring 
+   function over a YAML registry — cost, latency, quality, and a Redis-backed 
+   token bucket for distributed rate limiting. The entire system runs in 
+   local_mode for development or remote_mode on Oracle Cloud's free tier 
+   for headless execution."
+
+FOR "WHY NOT LANGCHAIN?":
+  "LangChain provides chains and agents, but it does not provide durable 
+   execution, crash recovery, or cost-aware routing. Ather OS is not a prompt 
+   framework; it is an execution substrate. LangChain is a library; Ather OS is 
+   a system."
+
+================================================================================
+                         CLOSING NOTES
+================================================================================
+
+- Build Stage 0 first. Do not write code for Stage 2-4 until Stage 1 is 
+  bulletproof.
+- Stage 0 uses NO external infrastructure. SQLite + in-memory queue only.
+- Stage 1 is the only stage that appears on your resume until it is complete.
+- Stage 2-4 are documented as future roadmap only. Do not claim them as built.
+- The "close your laptop" demo only works in remote_mode on a VPS. Local 
+  mode is for development only.
+- Code execution in Stage 4 is optional. If security sandboxing cannot be 
+  implemented properly (gVisor/Firejail), remove it from scope rather than 
+  hand-wave it.
+- LLM-as-judge in Stage 3 is opt-in only. Never enable by default.
+
+================================================================================
+                         END OF DOCUMENT
+================================================================================
