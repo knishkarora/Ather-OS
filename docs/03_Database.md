@@ -12,14 +12,14 @@ The `.gitignore` excludes `*.db`, `*.sqlite`, and `*.sqlite3`, which suggests lo
 
 ## Implemented Data Models
 
-The only implemented data models are Pydantic request/domain schemas in [[DAG Models]]:
+The implemented data structures are Pydantic request/domain schemas in [[DAG Models]], plus structural validation in [[DAG Validator]]:
 
 - [[Workflow Model]]
 - [[Task Model]]
 - [[TaskType]]
 - [[QualityTier]]
 
-These are not database tables. They are in-memory validation models defined in `backend/src/ather_os/dag/models.py`.
+These are not database tables. They are in-memory validation models defined in `backend/src/ather_os/dag/models.py` and validation logic defined in `backend/src/ather_os/dag/validators.py`.
 
 ## Planned Storage Model
 

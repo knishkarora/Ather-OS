@@ -59,6 +59,53 @@ flashy, but they create the ground where the real engine can grow.
 
 Session ended at 3:44 a.m.
 
+## Milestone: Wednesday, 8 July 2026
+
+We added the first real structural safety check for Ather OS workflows: a DAG
+validator.
+
+What we completed:
+
+- added `backend/src/ather_os/dag/validators.py`
+- added `DagValidationError`
+- added `validate_workflow_graph(workflow)`
+- rejected duplicate task IDs
+- rejected unknown dependency IDs
+- rejected self-dependencies
+- rejected dependency cycles
+- required exactly one root task
+- rejected disconnected workflow roots
+- exported the validator from `ather_os.dag`
+- added focused pytest coverage in `backend/tests/test_dag_validators.py`
+- confirmed the backend test suite passes with 7 tests
+- updated `/docs` so the knowledge base reflects the new implementation
+
+Why this mattered:
+
+The Pydantic models already checked whether a workflow had the right field
+shapes, but they could not prove that the graph was executable. This validator
+is the first step toward a trustworthy execution engine because future API,
+queue, worker, checkpoint, and state-store code can reject invalid workflows
+before trying to run them.
+
+The main design decision:
+
+We kept graph validation outside the Pydantic models. That keeps the model layer
+simple and makes workflow ingestion explicit: parse the shape first, then
+validate the graph structure.
+
+What I learned from this:
+
+Schema validation and system validation are related, but not the same. A JSON
+object can have all the right fields and still describe impossible work. The
+engine needs both layers.
+
+What I would do differently next time:
+
+Add the validator immediately after the models, before writing any worker or API
+code. It is much easier to build execution logic when the graph rules are
+already clear.
+
 ## Future Journey Updates
 
 This file should stay readable. We will not update it after every tiny edit.

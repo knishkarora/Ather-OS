@@ -12,21 +12,13 @@ Impact: future contributors or AI agents may assume non-existent APIs, storage, 
 
 Related: [[10_Current_Status|Current Status]], [[09_Roadmap|Roadmap]]
 
-## No Tests
+## Limited Tests
 
-`backend/pyproject.toml` configures pytest and `backend/tests/__init__.py` exists, but there are no actual tests. Running the local pytest executable collects 0 tests and exits with code 1.
+`backend/pyproject.toml` configures pytest and [[DAG Validator]] now has focused tests. Field-level tests for [[DAG Models]] and future engine tests are still missing.
 
-Impact: schema behavior and future changes are not protected.
+Impact: graph validation behavior is protected, but schema constraints and future execution behavior are not fully covered yet.
 
 Related: [[11_Tasks|Tasks]], [[05_Components|Components]]
-
-## DAG Structure Not Validated
-
-[[Task Model]] accepts dependency UUIDs, but [[Workflow Model]] does not validate that dependencies reference existing tasks, avoid cycles, avoid self-dependencies, or form a reachable graph.
-
-Impact: invalid workflow graphs can pass Pydantic validation.
-
-Related: [[DAG Models]], [[06_State_Management|State Management]]
 
 ## Installed Tools Not On PATH
 

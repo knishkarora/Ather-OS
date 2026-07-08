@@ -12,9 +12,7 @@ This task list is based on the audited current implementation.
 
 ## Immediate Engineering Tasks
 
-- Add tests for [[DAG Models]].
-- Add DAG structural validator for dependency IDs, cycles, self-dependencies, and reachability.
-- Decide whether validator belongs in `backend/src/ather_os/dag/validators.py` or another local pattern.
+- Add focused tests for [[DAG Models]] field constraints.
 - Add sample workflow JSON files under `backend/samples/`.
 - Add a minimal command or script to validate a sample workflow.
 

@@ -36,6 +36,22 @@ Evidence: `tasks: list[Task] = Field(min_length=1, max_length=20)`.
 
 Related: [[Task Model]], [[09_Roadmap|Roadmap]]
 
+## Validate DAG Structure Outside Pydantic Models
+
+Structural graph validation lives in `backend/src/ather_os/dag/validators.py` instead of inside [[Workflow Model]].
+
+Reason: field validation and graph validation are different responsibilities. Keeping [[DAG Validator]] separate makes it easier for future [[04_APIs|APIs]], sample loaders, tests, and workers to explicitly validate workflow structure at ingestion time.
+
+Related: [[DAG Models]], [[05_Components|Components]], [[06_State_Management|State Management]]
+
+## Require One Connected Root Task
+
+[[DAG Validator]] requires exactly one task with no dependencies and requires all tasks to be reachable from that root through dependency edges.
+
+Reason: the project vision describes a root workflow DAG with no orphaned tasks. This rule gives future [[Queue Broker]] and [[Worker]] logic a clear executable graph.
+
+Related: [[Task Model]], [[Workflow Model]], [[11_Tasks|Tasks]]
+
 ## Preserve Backend Package Boundaries Early
 
 The backend contains empty packages for API, cache, checkpoint, config, providers, queue, state, and worker before implementation.

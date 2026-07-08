@@ -11,13 +11,14 @@ Implemented:
 - Backend Python project setup.
 - Backend package skeleton.
 - Pydantic [[DAG Models]].
+- Structural [[DAG Validator]] with pytest coverage.
 - Placeholder [[Frontend]] folder.
 - Root project and journey documentation.
 
 ## Next Logical Work
 
-1. Add DAG structural validation for cycles, unknown dependencies, self-dependencies, and reachability.
-2. Add tests for [[Workflow Model]], [[Task Model]], [[TaskType]], [[QualityTier]], and future validators.
+1. Add focused tests for [[Workflow Model]], [[Task Model]], [[TaskType]], and [[QualityTier]] field constraints.
+2. Add sample workflow JSON files under `backend/samples/`.
 3. Define local [[State Store]] interface.
 4. Implement event schema for workflow/task lifecycle.
 5. Add SQLite local event storage.
@@ -31,7 +32,7 @@ Implemented:
 
 The project documents describe Phase 0 as a local backend engine with:
 
-- Validated workflow DAGs.
+- Validated workflow DAGs. Structural validation is now implemented; execution is not.
 - Event-sourced state.
 - Checkpoint recovery.
 - Response caching.

@@ -2,7 +2,7 @@
 
 [[README|Knowledge Base Home]] > Architecture
 
-Ather OS is structured as a future full-stack system with a Python [[Backend]] execution engine and a future [[Frontend]] dashboard. The current repository implements only the earliest backend domain schema layer.
+Ather OS is structured as a future full-stack system with a Python [[Backend]] execution engine and a future [[Frontend]] dashboard. The current repository implements the earliest backend domain schema layer and structural workflow graph validation.
 
 ## Current Architecture
 
@@ -11,13 +11,15 @@ flowchart TD
     Docs["Root vision docs"] --> Backend["backend/ Python package"]
     Docs --> Frontend["frontend/ placeholder"]
     Backend --> DAG["dag/models.py"]
+    Backend --> Validator["dag/validators.py"]
     DAG --> Workflow["Workflow Model"]
     Workflow --> Task["Task Model"]
     Task --> TaskType["TaskType enum"]
     Task --> QualityTier["QualityTier enum"]
+    Validator --> Workflow
 ```
 
-The only active code path is importable schema code under [[DAG Models]]. There is no running API app, no database adapter, no queue, no worker, no provider router, and no frontend application code yet.
+The active code paths are importable schema code under [[DAG Models]] and structural validation under [[DAG Validator]]. There is no running API app, no database adapter, no queue, no worker, no provider router, and no frontend application code yet.
 
 ## Intended Architecture
 
@@ -38,7 +40,7 @@ flowchart TD
     Frontend["Frontend Dashboard"] --> API
 ```
 
-This diagram is architectural intent, not current runtime behavior. Today, only [[DAG Models]] exists as real implementation.
+This diagram is architectural intent, not current runtime behavior. Today, only [[DAG Models]] and [[DAG Validator]] exist as real implementation.
 
 ## Module Responsibilities
 
@@ -47,6 +49,7 @@ This diagram is architectural intent, not current runtime behavior. Today, only 
 - [[Checkpoint Engine]]: package exists at `backend/src/ather_os/checkpoint`, but no event replay logic exists.
 - [[Configuration]]: package exists at `backend/src/ather_os/config`, but no settings model or environment loading exists.
 - [[DAG Models]]: implemented in `backend/src/ather_os/dag/models.py`.
+- [[DAG Validator]]: implemented in `backend/src/ather_os/dag/validators.py`.
 - [[Provider Router]]: package exists at `backend/src/ather_os/providers`, but no router or mock provider exists.
 - [[Queue Broker]]: package exists at `backend/src/ather_os/queue`, but no queue implementation exists.
 - [[State Store]]: package exists at `backend/src/ather_os/state`, but no database implementation exists.
@@ -54,7 +57,7 @@ This diagram is architectural intent, not current runtime behavior. Today, only 
 
 ## Data Flow
 
-Current data flow is limited to in-memory validation when a developer instantiates [[Workflow Model]] or [[Task Model]] through Pydantic. There is no persisted state or API request flow.
+Current data flow is limited to in-memory validation when a developer instantiates [[Workflow Model]] or [[Task Model]] through Pydantic, then calls [[DAG Validator]] to validate dependency structure. There is no persisted state or API request flow.
 
 Planned data flow is documented as:
 
@@ -78,7 +81,7 @@ Current development dependency:
 
 - Pytest
 
-Only Pydantic is used by the current source code. FastAPI and Uvicorn are installed for planned [[04_APIs|API]] work but are not imported by application code.
+Only Pydantic and the Python standard library are used by the current source code. FastAPI and Uvicorn are installed for planned [[04_APIs|API]] work but are not imported by application code.
 
 ## Related
 

@@ -16,6 +16,7 @@ Implemented in `backend/src/ather_os/dag/models.py`.
 - [[QualityTier]]: enum of output quality levels.
 - [[Task Model]]: a single executable node in a workflow graph.
 - [[Workflow Model]]: a collection of tasks tied to one goal.
+- [[DAG Validator]]: structural validation for workflow task dependencies.
 
 ### TaskType
 
@@ -52,7 +53,7 @@ Implemented in `backend/src/ather_os/dag/models.py`.
 - `quality_tier: QualityTier` defaulting to `standard`
 - `max_retries: int` defaulting to 2 and greater than or equal to 0
 
-The `dependencies` field relates a task to other task IDs in the same [[Workflow Model]], but no structural DAG validator currently verifies that those IDs exist, are acyclic, or are reachable.
+The `dependencies` field relates a task to other task IDs in the same [[Workflow Model]]. [[DAG Validator]] verifies that these relationships form a valid executable graph.
 
 ### Workflow Model
 
@@ -63,6 +64,26 @@ The `dependencies` field relates a task to other task IDs in the same [[Workflow
 - `tasks: list[Task]` with minimum length 1 and maximum length 20
 
 [[Workflow Model]] depends on [[Task Model]] because it contains the task list.
+
+### DAG Validator
+
+Implemented in `backend/src/ather_os/dag/validators.py`.
+
+[[DAG Validator]] exposes:
+
+- `validate_workflow_graph(workflow: Workflow) -> None`
+- `DagValidationError`
+
+The validator checks:
+
+- Duplicate task IDs.
+- Dependencies that reference unknown task IDs.
+- Tasks that depend on themselves.
+- Dependency cycles.
+- Exactly one root task with no dependencies.
+- Reachability from the root task through dependency edges.
+
+[[DAG Validator]] depends on [[Workflow Model]] and [[Task Model]]. It does not persist state and does not execute tasks; it only proves that a workflow graph is structurally safe for future [[Queue Broker]], [[Worker]], and [[Checkpoint Engine]] logic.
 
 ## Placeholder Backend Component Boundaries
 
@@ -90,6 +111,8 @@ flowchart TD
     Task --> QualityTier["QualityTier"]
     Task --> Dependencies["dependencies: list[UUID]"]
     Task --> ContextNeeds["context_needs: list[str]"]
+    Validator["DAG Validator"] --> Workflow
+    Validator --> Dependencies
 ```
 
 ## Related
