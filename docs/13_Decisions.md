@@ -1,0 +1,68 @@
+# Decisions
+
+[[README|Knowledge Base Home]] > Decisions
+
+This file records architectural decisions that are visible in the repository today.
+
+## Use Python Backend
+
+The backend is a Python package named `ather-os-backend`.
+
+Evidence: `backend/pyproject.toml` and `backend/src/ather_os`.
+
+Related: [[Backend]], [[01_Architecture|Architecture]]
+
+## Use Pydantic for Domain Schemas
+
+[[DAG Models]] use Pydantic `BaseModel` and `Field` constraints.
+
+Evidence: `backend/src/ather_os/dag/models.py`.
+
+Related: [[05_Components|Components]], [[06_State_Management|State Management]]
+
+## Use UUID Identifiers
+
+[[Workflow Model]] and [[Task Model]] use UUID fields for workflow and task identity.
+
+Evidence: `workflow_id: UUID`, `task_id: UUID`, and `dependencies: list[UUID]`.
+
+Related: [[03_Database|Database]], [[DAG Models]]
+
+## Limit Workflows to 20 Tasks
+
+[[Workflow Model]] restricts `tasks` to minimum 1 and maximum 20.
+
+Evidence: `tasks: list[Task] = Field(min_length=1, max_length=20)`.
+
+Related: [[Task Model]], [[09_Roadmap|Roadmap]]
+
+## Preserve Backend Package Boundaries Early
+
+The backend contains empty packages for API, cache, checkpoint, config, providers, queue, state, and worker before implementation.
+
+Evidence: package directories under `backend/src/ather_os`.
+
+Related: [[02_Folder_Structure|Folder Structure]], [[01_Architecture|Architecture]]
+
+## Keep Frontend Placeholder
+
+The frontend folder exists before UI implementation.
+
+Evidence: `frontend/README.md`.
+
+Related: [[08_UI_System|UI System]], [[Frontend]]
+
+## Open Decisions
+
+- Which DAG validator module and API should be used?
+- Which database library should implement local SQLite storage?
+- Should FastAPI be introduced before or after the local engine works without HTTP?
+- How should local mode handle authentication?
+- Which frontend framework should be used?
+
+## Related
+
+- [[00_Project_Overview|Project Overview]]
+- [[09_Roadmap|Roadmap]]
+- [[11_Tasks|Tasks]]
+- [[10_Current_Status|Current Status]]
