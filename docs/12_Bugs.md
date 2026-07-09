@@ -6,7 +6,7 @@ This file tracks known bugs, mismatches, and risks in the current repository.
 
 ## Documentation Mismatch
 
-`AtherOS_Project_Master_Document.txt` says Stage 0 is built and lists several implemented features. The actual codebase only implements [[DAG Models]] and package placeholders.
+`AtherOS_Project_Master_Document.md` says Stage 0 is built and lists several implemented features. The actual codebase only implements the DAG foundation, sample validation, and package placeholders.
 
 Impact: future contributors or AI agents may assume non-existent APIs, storage, cache, worker, or recovery code exists.
 
@@ -14,9 +14,9 @@ Related: [[10_Current_Status|Current Status]], [[09_Roadmap|Roadmap]]
 
 ## Limited Tests
 
-`backend/pyproject.toml` configures pytest and [[DAG Validator]] now has focused tests. Field-level tests for [[DAG Models]] and future engine tests are still missing.
+`backend/pyproject.toml` configures pytest, and the DAG foundation now has focused tests. Future engine tests are still missing because the state store, queue, worker, cache, provider router, and API are not implemented yet.
 
-Impact: graph validation behavior is protected, but schema constraints and future execution behavior are not fully covered yet.
+Impact: DAG schema and graph validation behavior is protected, but future execution behavior is not covered yet.
 
 Related: [[11_Tasks|Tasks]], [[05_Components|Components]]
 

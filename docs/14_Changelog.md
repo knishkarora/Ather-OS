@@ -6,9 +6,14 @@ This changelog records repository state changes that are visible from the audite
 
 ## 2026-07-09
 
+- Renamed and reformatted the project master document as `AtherOS_Project_Master_Document.md` for easier Markdown viewing.
 - Added pytest coverage for [[DAG Models]] field constraints in `backend/tests/test_dag_models.py`.
 - Covered task type and quality tier values, default quality, prompt and goal minimum lengths, token bounds, retry bounds, and workflow task count limits.
 - Updated [[10_Current_Status|Current Status]] and [[11_Tasks|Tasks]] so the knowledge base reflects the expanded DAG foundation test coverage.
+- Added sample workflow JSON files under `backend/samples/`.
+- Added a minimal workflow validation command in `backend/src/ather_os/dag/validate_workflow.py`.
+- Added pytest coverage for valid and invalid workflow samples in `backend/tests/test_validate_workflow_command.py`.
+- Updated [[09_Roadmap|Roadmap]] and [[11_Tasks|Tasks]] so the next backend step is now the local [[State Store]] interface.
 
 ## 2026-07-08
 

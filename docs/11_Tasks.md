@@ -12,13 +12,11 @@ This task list is based on the audited current implementation.
 
 ## Immediate Engineering Tasks
 
-- Add sample workflow JSON files under `backend/samples/`.
-- Add a minimal command or script to validate a sample workflow.
+- Define local [[State Store]] interface.
+- Define event models for workflow/task lifecycle.
 
 ## Backend Foundation Tasks
 
-- Define [[State Store]] interface.
-- Define event models for task lifecycle.
 - Implement SQLite local event store.
 - Implement [[Checkpoint Engine]] replay.
 - Define [[Queue Broker]] interface.

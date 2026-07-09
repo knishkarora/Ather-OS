@@ -12,27 +12,27 @@ Implemented:
 - Backend package skeleton.
 - Pydantic [[DAG Models]].
 - Structural [[DAG Validator]] with pytest coverage.
+- Sample workflow JSON files.
+- Minimal workflow validation command with pytest coverage.
 - Placeholder [[Frontend]] folder.
 - Root project and journey documentation.
 
 ## Next Logical Work
 
-1. Add focused tests for [[Workflow Model]], [[Task Model]], [[TaskType]], and [[QualityTier]] field constraints.
-2. Add sample workflow JSON files under `backend/samples/`.
-3. Define local [[State Store]] interface.
-4. Implement event schema for workflow/task lifecycle.
-5. Add SQLite local event storage.
-6. Implement [[Checkpoint Engine]] replay.
-7. Add [[Queue Broker]] for dependency-aware task scheduling.
-8. Add mock [[Provider Router]] and mock provider.
-9. Add in-process [[Worker]] execution loop.
-10. Add basic [[04_APIs|APIs]] once the backend engine has testable behavior.
+1. Define local [[State Store]] interface.
+2. Implement event schema for workflow/task lifecycle.
+3. Add SQLite local event storage.
+4. Implement [[Checkpoint Engine]] replay.
+5. Add [[Queue Broker]] for dependency-aware task scheduling.
+6. Add mock [[Provider Router]] and mock provider.
+7. Add in-process [[Worker]] execution loop.
+8. Add basic [[04_APIs|APIs]] once the backend engine has testable behavior.
 
 ## Phase 0 Vision
 
 The project documents describe Phase 0 as a local backend engine with:
 
-- Validated workflow DAGs. Structural validation is now implemented; execution is not.
+- Validated workflow DAGs. Schema validation, structural validation, sample JSON files, and a local validation command are now implemented; execution is not.
 - Event-sourced state.
 - Checkpoint recovery.
 - Response caching.

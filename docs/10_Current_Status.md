@@ -8,13 +8,16 @@ This is the audited state of the repository.
 
 - Root README describing Ather OS and Phase 0 focus.
 - `JOURNEY.md` with Day 1 project notes.
-- Product master document with long-term vision.
+- Markdown product master document with long-term vision.
 - Python backend project using `pyproject.toml`.
 - Backend package skeleton under `backend/src/ather_os`.
 - Pydantic [[DAG Models]] in `backend/src/ather_os/dag/models.py`.
 - Structural [[DAG Validator]] in `backend/src/ather_os/dag/validators.py`.
+- Sample workflow JSON files under `backend/samples/`.
+- Minimal workflow validation command in `backend/src/ather_os/dag/validate_workflow.py`.
 - Pytest coverage for [[DAG Models]] field constraints in `backend/tests/test_dag_models.py`.
 - Pytest coverage for [[DAG Validator]] in `backend/tests/test_dag_validators.py`.
+- Pytest coverage for sample workflow validation in `backend/tests/test_validate_workflow_command.py`.
 - Placeholder package boundaries for [[04_APIs|APIs]], [[Response Cache]], [[Checkpoint Engine]], [[Configuration]], [[Provider Router]], [[Queue Broker]], [[State Store]], and [[Worker]].
 - Placeholder [[Frontend]] README.
 - `.gitignore` for Python, local databases, env files, frontend build outputs, and editor metadata.
@@ -24,7 +27,8 @@ This is the audited state of the repository.
 - [[Backend]] structure exists, but most packages contain only docstrings.
 - [[DAG Models]] validate field shapes and basic constraints.
 - [[DAG Validator]] validates duplicate task IDs, unknown dependencies, self-dependencies, cycles, multiple roots, and disconnected roots.
-- Test configuration exists in `pyproject.toml`, and focused DAG model and validator tests now exist.
+- The validation command loads local workflow JSON and validates it, but does not execute or persist workflows.
+- Test configuration exists in `pyproject.toml`, and focused DAG model, validator, and validation command tests now exist.
 - A local virtual environment exists and contains installed dependencies, but the global shell PATH does not expose `pytest`.
 
 ## Missing
@@ -53,13 +57,13 @@ Command run from `backend/`:
 .\.venv\Scripts\pytest.exe
 ```
 
-Result: pytest started successfully using Python 3.12.13, collected 19 items, and all 19 tests passed.
+Result: pytest started successfully using Python 3.12.13, collected 24 items, and all 24 tests passed.
 
 Running plain `pytest` from the shell failed because `pytest` is not on PATH.
 
 ## Known Mismatch
 
-`AtherOS_Project_Master_Document.txt` states that Stage 0 features are built, including storage, event sourcing, checkpoint recovery, cache, mock provider, worker, and REST API. The audited source code does not include those implementations. Treat those Stage 0 claims as aspirational or stale until code is added.
+`AtherOS_Project_Master_Document.md` states that Stage 0 features are built, including storage, event sourcing, checkpoint recovery, cache, mock provider, worker, and REST API. The audited source code does not include those implementations. Treat those Stage 0 claims as aspirational or stale until code is added.
 
 ## Current Assumptions in Code
 

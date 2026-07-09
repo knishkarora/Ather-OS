@@ -1,0 +1,26 @@
+{
+  "workflow_id": "00000000-0000-0000-0000-000000000002",
+  "goal": "Demonstrate a workflow that should fail DAG validation because it contains a cycle.",
+  "tasks": [
+    {
+      "task_id": "00000000-0000-0000-0000-000000000201",
+      "type": "research",
+      "prompt": "Start the cyclic workflow.",
+      "dependencies": ["00000000-0000-0000-0000-000000000202"],
+      "context_needs": [],
+      "estimated_tokens": 500,
+      "quality_tier": "standard",
+      "max_retries": 2
+    },
+    {
+      "task_id": "00000000-0000-0000-0000-000000000202",
+      "type": "analysis",
+      "prompt": "Continue the cyclic workflow.",
+      "dependencies": ["00000000-0000-0000-0000-000000000201"],
+      "context_needs": [],
+      "estimated_tokens": 500,
+      "quality_tier": "standard",
+      "max_retries": 2
+    }
+  ]
+}

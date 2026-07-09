@@ -1,0 +1,36 @@
+{
+  "workflow_id": "00000000-0000-0000-0000-000000000001",
+  "goal": "Research and summarize a local backend execution engine design.",
+  "tasks": [
+    {
+      "task_id": "00000000-0000-0000-0000-000000000101",
+      "type": "research",
+      "prompt": "Identify the core backend components needed for a local execution engine.",
+      "dependencies": [],
+      "context_needs": [],
+      "estimated_tokens": 1200,
+      "quality_tier": "standard",
+      "max_retries": 2
+    },
+    {
+      "task_id": "00000000-0000-0000-0000-000000000102",
+      "type": "analysis",
+      "prompt": "Analyze how the backend components should depend on each other.",
+      "dependencies": ["00000000-0000-0000-0000-000000000101"],
+      "context_needs": ["00000000-0000-0000-0000-000000000101.output"],
+      "estimated_tokens": 1600,
+      "quality_tier": "standard",
+      "max_retries": 2
+    },
+    {
+      "task_id": "00000000-0000-0000-0000-000000000103",
+      "type": "writing",
+      "prompt": "Write a concise summary of the proposed backend execution engine design.",
+      "dependencies": ["00000000-0000-0000-0000-000000000102"],
+      "context_needs": ["00000000-0000-0000-0000-000000000102.output"],
+      "estimated_tokens": 1000,
+      "quality_tier": "polished",
+      "max_retries": 2
+    }
+  ]
+}

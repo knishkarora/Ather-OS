@@ -1,0 +1,26 @@
+{
+  "workflow_id": "00000000-0000-0000-0000-000000000003",
+  "goal": "Demonstrate a workflow that should fail DAG validation because it references a missing task.",
+  "tasks": [
+    {
+      "task_id": "00000000-0000-0000-0000-000000000301",
+      "type": "research",
+      "prompt": "Start the workflow.",
+      "dependencies": [],
+      "context_needs": [],
+      "estimated_tokens": 500,
+      "quality_tier": "standard",
+      "max_retries": 2
+    },
+    {
+      "task_id": "00000000-0000-0000-0000-000000000302",
+      "type": "analysis",
+      "prompt": "Depend on a task that does not exist.",
+      "dependencies": ["00000000-0000-0000-0000-000000009999"],
+      "context_needs": [],
+      "estimated_tokens": 500,
+      "quality_tier": "standard",
+      "max_retries": 2
+    }
+  ]
+}

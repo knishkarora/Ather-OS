@@ -17,6 +17,7 @@ Implemented in `backend/src/ather_os/dag/models.py`.
 - [[Task Model]]: a single executable node in a workflow graph.
 - [[Workflow Model]]: a collection of tasks tied to one goal.
 - [[DAG Validator]]: structural validation for workflow task dependencies.
+- Workflow validation command: loads sample workflow JSON and runs schema plus graph validation.
 
 ### TaskType
 
@@ -85,6 +86,24 @@ The validator checks:
 
 [[DAG Validator]] depends on [[Workflow Model]] and [[Task Model]]. It does not persist state and does not execute tasks; it only proves that a workflow graph is structurally safe for future [[Queue Broker]], [[Worker]], and [[Checkpoint Engine]] logic.
 
+### Workflow Validation Command
+
+Implemented in `backend/src/ather_os/dag/validate_workflow.py`.
+
+The command helper exposes:
+
+- `load_workflow_file(path: Path) -> Workflow`
+- `validate_workflow_file(path: Path) -> Workflow`
+- `main(argv: Sequence[str] | None = None) -> int`
+
+It uses the existing [[DAG Models]] and [[DAG Validator]] rather than introducing a separate validation path. It can be run from `backend/` with:
+
+```powershell
+.\.venv\Scripts\python.exe -m ather_os.dag.validate_workflow .\samples\valid_research_workflow.json
+```
+
+The command is intentionally minimal. It validates local JSON samples only; it does not submit workflows, persist state, or execute tasks.
+
 ## Placeholder Backend Component Boundaries
 
 The following backend packages exist but contain no executable implementation:
@@ -113,6 +132,8 @@ flowchart TD
     Task --> ContextNeeds["context_needs: list[str]"]
     Validator["DAG Validator"] --> Workflow
     Validator --> Dependencies
+    Command["Workflow Validation Command"] --> Workflow
+    Command --> Validator
 ```
 
 ## Related
