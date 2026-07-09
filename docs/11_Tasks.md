@@ -12,7 +12,6 @@ This task list is based on the audited current implementation.
 
 ## Immediate Engineering Tasks
 
-- Add focused tests for [[DAG Models]] field constraints.
 - Add sample workflow JSON files under `backend/samples/`.
 - Add a minimal command or script to validate a sample workflow.
 
@@ -39,7 +38,7 @@ This task list is based on the audited current implementation.
 
 ## Quality Tasks
 
-- Add automated tests.
+- Continue expanding automated tests as backend modules are added.
 - Add linting/formatting decision.
 - Add CI after tests exist.
 - Add explicit developer setup instructions.

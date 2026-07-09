@@ -4,6 +4,12 @@
 
 This changelog records repository state changes that are visible from the audited files.
 
+## 2026-07-09
+
+- Added pytest coverage for [[DAG Models]] field constraints in `backend/tests/test_dag_models.py`.
+- Covered task type and quality tier values, default quality, prompt and goal minimum lengths, token bounds, retry bounds, and workflow task count limits.
+- Updated [[10_Current_Status|Current Status]] and [[11_Tasks|Tasks]] so the knowledge base reflects the expanded DAG foundation test coverage.
+
 ## 2026-07-08
 
 - Added [[DAG Validator]] in `backend/src/ather_os/dag/validators.py`.

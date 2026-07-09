@@ -13,6 +13,7 @@ This is the audited state of the repository.
 - Backend package skeleton under `backend/src/ather_os`.
 - Pydantic [[DAG Models]] in `backend/src/ather_os/dag/models.py`.
 - Structural [[DAG Validator]] in `backend/src/ather_os/dag/validators.py`.
+- Pytest coverage for [[DAG Models]] field constraints in `backend/tests/test_dag_models.py`.
 - Pytest coverage for [[DAG Validator]] in `backend/tests/test_dag_validators.py`.
 - Placeholder package boundaries for [[04_APIs|APIs]], [[Response Cache]], [[Checkpoint Engine]], [[Configuration]], [[Provider Router]], [[Queue Broker]], [[State Store]], and [[Worker]].
 - Placeholder [[Frontend]] README.
@@ -23,7 +24,7 @@ This is the audited state of the repository.
 - [[Backend]] structure exists, but most packages contain only docstrings.
 - [[DAG Models]] validate field shapes and basic constraints.
 - [[DAG Validator]] validates duplicate task IDs, unknown dependencies, self-dependencies, cycles, multiple roots, and disconnected roots.
-- Test configuration exists in `pyproject.toml`, and DAG validator tests now exist.
+- Test configuration exists in `pyproject.toml`, and focused DAG model and validator tests now exist.
 - A local virtual environment exists and contains installed dependencies, but the global shell PATH does not expose `pytest`.
 
 ## Missing
@@ -42,7 +43,7 @@ This is the audited state of the repository.
 - Environment configuration code.
 - Deployment configuration.
 - CI configuration.
-- Tests.
+- Tests outside the implemented DAG foundation.
 
 ## Verification
 
@@ -52,7 +53,7 @@ Command run from `backend/`:
 .\.venv\Scripts\pytest.exe
 ```
 
-Result: pytest started successfully using Python 3.12.13, collected 7 items, and all 7 tests passed.
+Result: pytest started successfully using Python 3.12.13, collected 19 items, and all 19 tests passed.
 
 Running plain `pytest` from the shell failed because `pytest` is not on PATH.
 
