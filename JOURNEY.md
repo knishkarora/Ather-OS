@@ -155,6 +155,55 @@ Supporting evidence:
 
 - `docs/journey-assets/2026-07-13-state-store-tests.md`
 
+## Milestone: Monday, 13 July 2026
+
+We added the first checkpoint replay layer for Ather OS.
+
+What we completed:
+
+- added workflow and task status enums in `backend/src/ather_os/checkpoint/models.py`
+- added `WorkflowSnapshot` and `TaskSnapshot` projection models
+- added `replay_workflow(events)` in `backend/src/ather_os/checkpoint/replay.py`
+- added `CheckpointReplayError` for invalid event logs
+- replayed workflow submission into pending workflow/task state
+- replayed task queue, start, completion, and failure events into task state
+- replayed workflow completion and failure events into workflow state
+- rejected empty event logs, logs that do not start with workflow submission,
+  mixed workflow IDs, and unknown task IDs
+- added focused pytest coverage in `backend/tests/test_checkpoint_replay.py`
+- confirmed the backend test suite passes with 43 tests
+- updated `/docs` so checkpoint replay is documented as implemented and the
+  next backend step is now queue scheduling
+
+Why this mattered:
+
+The event store gave Ather OS durable history. Checkpoint replay turns that
+history back into useful current state. This is the bridge between "we recorded
+what happened" and "the engine can resume, inspect, and decide what to do next."
+
+The main design decision:
+
+We kept replay as a pure function over already-loaded events. It does not query
+SQLite directly, does not schedule tasks, and does not know about workers. That
+keeps storage separate from projection logic, makes the behavior easy to test,
+and lets future APIs or workers reuse the same replay code.
+
+What I learned from this:
+
+Checkpoint recovery starts as a simple reduction over events. The hard part is
+not the code volume; it is being precise about lifecycle rules and refusing to
+silently replay event streams that are malformed.
+
+What I would do differently next time:
+
+Define the replay contract at the same time as the event names. Events and
+projections shape each other: a missing event field becomes obvious once you ask
+what current state must be reconstructed later.
+
+Supporting evidence:
+
+- `docs/journey-assets/2026-07-13-checkpoint-replay-tests.md`
+
 ## Future Journey Updates
 
 This file should stay readable. We will not update it after every tiny edit.

@@ -2,7 +2,7 @@
 
 [[README|Knowledge Base Home]] > Architecture
 
-Ather OS is structured as a future full-stack system with a Python [[Backend]] execution engine and a future [[Frontend]] dashboard. The current repository implements the earliest backend domain schema layer, structural workflow graph validation, and a local append-only [[State Store]] foundation.
+Ather OS is structured as a future full-stack system with a Python [[Backend]] execution engine and a future [[Frontend]] dashboard. The current repository implements the earliest backend domain schema layer, structural workflow graph validation, a local append-only [[State Store]] foundation, and [[Checkpoint Engine]] replay.
 
 ## Current Architecture
 
@@ -13,6 +13,7 @@ flowchart TD
     Backend --> DAG["dag/models.py"]
     Backend --> Validator["dag/validators.py"]
     Backend --> State["state/"]
+    Backend --> Checkpoint["checkpoint/"]
     DAG --> Workflow["Workflow Model"]
     Workflow --> Task["Task Model"]
     Task --> TaskType["TaskType enum"]
@@ -21,9 +22,11 @@ flowchart TD
     State --> Events["events.py"]
     State --> Store["store.py"]
     State --> SQLite["sqlite.py"]
+    Checkpoint --> Projections["models.py"]
+    Checkpoint --> Replay["replay.py"]
 ```
 
-The active code paths are importable schema code under [[DAG Models]], structural validation under [[DAG Validator]], and append-only event persistence under [[State Store]]. There is no running API app, no queue, no worker, no provider router, no checkpoint replay, and no frontend application code yet.
+The active code paths are importable schema code under [[DAG Models]], structural validation under [[DAG Validator]], append-only event persistence under [[State Store]], and event replay under [[Checkpoint Engine]]. There is no running API app, no queue, no worker, no provider router, and no frontend application code yet.
 
 ## Intended Architecture
 
@@ -44,13 +47,13 @@ flowchart TD
     Frontend["Frontend Dashboard"] --> API
 ```
 
-This diagram is architectural intent, not current runtime behavior. Today, only [[DAG Models]] and [[DAG Validator]] exist as real implementation.
+This diagram is architectural intent, not current runtime behavior. Today, [[DAG Models]], [[DAG Validator]], [[State Store]], and [[Checkpoint Engine]] exist as real implementation.
 
 ## Module Responsibilities
 
 - [[04_APIs|API Layer]]: package exists at `backend/src/ather_os/api`, but contains only a docstring.
 - [[Response Cache]]: package exists at `backend/src/ather_os/cache`, but no interface or implementation exists.
-- [[Checkpoint Engine]]: package exists at `backend/src/ather_os/checkpoint`, but no event replay logic exists.
+- [[Checkpoint Engine]]: implemented with workflow/task status projection models and pure event replay logic.
 - [[Configuration]]: package exists at `backend/src/ather_os/config`, but no settings model or environment loading exists.
 - [[DAG Models]]: implemented in `backend/src/ather_os/dag/models.py`.
 - [[DAG Validator]]: implemented in `backend/src/ather_os/dag/validators.py`.
@@ -61,7 +64,7 @@ This diagram is architectural intent, not current runtime behavior. Today, only 
 
 ## Data Flow
 
-Current data flow supports in-memory validation when a developer instantiates [[Workflow Model]] or [[Task Model]] through Pydantic, then calls [[DAG Validator]] to validate dependency structure. After that, lifecycle events can be appended to and listed from [[State Store]]. There is still no API request flow or execution loop.
+Current data flow supports in-memory validation when a developer instantiates [[Workflow Model]] or [[Task Model]] through Pydantic, then calls [[DAG Validator]] to validate dependency structure. After that, lifecycle events can be appended to and listed from [[State Store]], then replayed by [[Checkpoint Engine]] into workflow/task snapshots. There is still no API request flow or execution loop.
 
 Planned data flow is documented as:
 
@@ -71,7 +74,7 @@ Planned data flow is documented as:
 4. [[Queue Broker]] schedules executable tasks.
 5. [[Worker]] executes tasks through [[Provider Router]].
 6. [[State Store]] appends task events. This append-only portion now exists locally through SQLite.
-7. [[Checkpoint Engine]] replays events after restart.
+7. [[Checkpoint Engine]] replays events into workflow/task snapshots. This in-memory replay portion now exists; worker restart behavior does not.
 
 ## Dependencies
 

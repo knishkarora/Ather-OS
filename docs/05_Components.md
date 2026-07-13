@@ -116,7 +116,20 @@ Implemented in `backend/src/ather_os/state/`.
 
 The current event model covers workflow submission, task queue/start/completion/failure, and workflow completion/failure. The SQLite implementation appends events to a `workflow_events` table and lists events for a workflow in append order.
 
-This component does not yet project workflow status, replay checkpoints, schedule tasks, or execute work.
+This component does not schedule tasks or execute work. [[Checkpoint Engine]] owns status projection from stored events.
+
+### Checkpoint Engine
+
+Implemented in `backend/src/ather_os/checkpoint/`.
+
+[[Checkpoint Engine]] exposes:
+
+- `WorkflowStatus`, `TaskStatus`, `WorkflowSnapshot`, and `TaskSnapshot` in `models.py`.
+- `replay_workflow(events)` and `CheckpointReplayError` in `replay.py`.
+
+The replay function reconstructs current workflow/task state from append-ordered [[State Store]] events. It starts from `workflow_submitted`, creates pending task snapshots, then applies task and workflow lifecycle events in order.
+
+The checkpoint engine does not query the database by itself, expose API status endpoints, schedule tasks, or restart workers.
 
 ## Placeholder Backend Component Boundaries
 
@@ -124,7 +137,6 @@ The following backend packages exist but contain no executable implementation:
 
 - [[04_APIs|APIs]]: `backend/src/ather_os/api`
 - [[Response Cache]]: `backend/src/ather_os/cache`
-- [[Checkpoint Engine]]: `backend/src/ather_os/checkpoint`
 - [[Configuration]]: `backend/src/ather_os/config`
 - [[Provider Router]]: `backend/src/ather_os/providers`
 - [[Queue Broker]]: `backend/src/ather_os/queue`
@@ -151,6 +163,8 @@ flowchart TD
     StateStore --> SQLite["SQLite Event Store"]
     Events --> Workflow
     Events --> Task
+    Checkpoint["Checkpoint Engine"] --> Events
+    Checkpoint --> Snapshot["Workflow Snapshot"]
 ```
 
 ## Related

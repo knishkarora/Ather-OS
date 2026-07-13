@@ -22,7 +22,10 @@ This is the audited state of the repository.
 - Minimal [[State Store]] protocol in `backend/src/ather_os/state/store.py`.
 - SQLite-backed append-only event store in `backend/src/ather_os/state/sqlite.py`.
 - Pytest coverage for state event validation and SQLite event persistence.
-- Placeholder package boundaries for [[04_APIs|APIs]], [[Response Cache]], [[Checkpoint Engine]], [[Configuration]], [[Provider Router]], [[Queue Broker]], and [[Worker]].
+- [[Checkpoint Engine]] status projection models in `backend/src/ather_os/checkpoint/models.py`.
+- [[Checkpoint Engine]] event replay in `backend/src/ather_os/checkpoint/replay.py`.
+- Pytest coverage for checkpoint replay behavior and invalid event logs.
+- Placeholder package boundaries for [[04_APIs|APIs]], [[Response Cache]], [[Configuration]], [[Provider Router]], [[Queue Broker]], and [[Worker]].
 - Placeholder [[Frontend]] README.
 - `.gitignore` for Python, local databases, env files, frontend build outputs, and editor metadata.
 
@@ -32,7 +35,7 @@ This is the audited state of the repository.
 - [[DAG Models]] validate field shapes and basic constraints.
 - [[DAG Validator]] validates duplicate task IDs, unknown dependencies, self-dependencies, cycles, multiple roots, and disconnected roots.
 - The validation command loads local workflow JSON and validates it, but does not execute or persist workflows.
-- [[State Store]] can append and list events, but no higher-level workflow submission or replay code uses it yet.
+- [[State Store]] can append and list events, and [[Checkpoint Engine]] can replay listed events into workflow/task status snapshots.
 - Test configuration exists in `pyproject.toml`, and focused DAG model, validator, and validation command tests now exist.
 - A local virtual environment exists and contains installed dependencies, but the global shell PATH does not expose `pytest`.
 
@@ -40,8 +43,8 @@ This is the audited state of the repository.
 
 - FastAPI app and routes.
 - Database migrations.
-- Workflow/task status projections.
-- Checkpoint recovery.
+- Integrated workflow/task status query API.
+- Worker checkpoint recovery loop.
 - Response cache.
 - Queue broker.
 - Provider router.
@@ -52,7 +55,7 @@ This is the audited state of the repository.
 - Environment configuration code.
 - Deployment configuration.
 - CI configuration.
-- Tests for future API, queue, checkpoint, provider, worker, and cache behavior.
+- Tests for future API, queue, provider, worker, and cache behavior.
 
 ## Verification
 
@@ -62,13 +65,13 @@ Command run from `backend/`:
 .\.venv\Scripts\pytest.exe
 ```
 
-Result: pytest started successfully using Python 3.12.13, collected 34 items, and all 34 tests passed.
+Result: pytest started successfully using Python 3.12.13, collected 43 items, and all 43 tests passed.
 
 Running plain `pytest` from the shell failed because `pytest` is not on PATH.
 
 ## Known Mismatch
 
-`AtherOS_Project_Master_Document.md` states that Stage 0 features are built, including storage, event sourcing, checkpoint recovery, cache, mock provider, worker, and REST API. The audited source code does not include those implementations. Treat those Stage 0 claims as aspirational or stale until code is added.
+`AtherOS_Project_Master_Document.md` states that Stage 0 features are built, including storage, event sourcing, checkpoint recovery, cache, mock provider, worker, and REST API. The audited source code now includes local storage, event sourcing, and in-memory checkpoint replay foundations, but cache, mock provider, worker, and REST API implementations are still missing. Treat remaining Stage 0 claims as aspirational or stale until code is added.
 
 ## Current Assumptions in Code
 
@@ -82,6 +85,8 @@ Running plain `pytest` from the shell failed because `pytest` is not on PATH.
 - A workflow graph is expected to have exactly one root task with no dependencies.
 - Workflow and task lifecycle changes are persisted as append-only events.
 - SQLite events store UUIDs and timestamps as text plus the full event JSON payload.
+- Checkpoint replay expects append-ordered events and starts with `workflow_submitted`.
+- Workflow/task snapshots are in-memory projections, not database tables.
 
 ## Related
 

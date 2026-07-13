@@ -76,6 +76,14 @@ Reason: the project values minimal dependencies, and local SQLite is enough for 
 
 Related: [[03_Database|Database]], [[State Store]]
 
+## Keep Checkpoint Replay Pure
+
+[[Checkpoint Engine]] replays a list of already-loaded events instead of querying [[State Store]] directly.
+
+Reason: keeping replay pure makes it easy to test and keeps storage concerns separate from projection concerns. Future APIs, workers, or recovery code can decide where events come from, then reuse the same replay function.
+
+Related: [[Checkpoint Engine]], [[State Store]], [[06_State_Management|State Management]]
+
 ## Keep Frontend Placeholder
 
 The frontend folder exists before UI implementation.

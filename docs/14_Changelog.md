@@ -11,6 +11,10 @@ This changelog records repository state changes that are visible from the audite
 - Added `SQLiteStateStore` in `backend/src/ather_os/state/sqlite.py` using Python's standard `sqlite3` module.
 - Added pytest coverage for lifecycle event validation, event JSON parsing, SQLite append ordering, workflow filtering, persistence across store instances, and duplicate event IDs.
 - Added [[State Store]] documentation and updated architecture, database, state management, roadmap, tasks, decisions, current status, and folder structure docs to reflect the implemented persistence foundation.
+- Added [[Checkpoint Engine]] projection models in `backend/src/ather_os/checkpoint/models.py`.
+- Added `replay_workflow(events)` in `backend/src/ather_os/checkpoint/replay.py`.
+- Added pytest coverage for workflow submission replay, task queue/start/completion/failure replay, workflow completion/failure replay, and invalid event logs.
+- Added [[Checkpoint Engine]] documentation and updated the knowledge base so the next backend step is now [[Queue Broker]] scheduling.
 
 ## 2026-07-09
 

@@ -40,7 +40,7 @@ Task-level events also include `task_id`. Terminal failure/completion events car
 - `append_event(event: WorkflowEvent) -> None`
 - `list_events(workflow_id: UUID) -> list[WorkflowEvent]`
 
-The contract intentionally does not expose mutation, deletion, projections, queue behavior, or checkpoint replay. Those belong to future [[Checkpoint Engine]], [[Queue Broker]], and [[Worker]] work.
+The contract intentionally does not expose mutation, deletion, projections, queue behavior, or worker recovery. [[Checkpoint Engine]] owns replay from events into current state.
 
 ## SQLite Storage
 
@@ -60,9 +60,8 @@ Events are returned in append order by `sequence`. The stored JSON payload is pa
 
 ## Current Limits
 
-- No replay/projection layer yet.
-- No workflow status query yet.
-- No task status query yet.
+- No workflow status query API yet.
+- No task status query API yet.
 - No event idempotency policy beyond the database uniqueness constraint.
 - No API, worker, or queue integration yet.
 

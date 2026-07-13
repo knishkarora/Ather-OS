@@ -12,14 +12,11 @@ This task list is based on the audited current implementation.
 
 ## Immediate Engineering Tasks
 
-- Define [[Checkpoint Engine]] replay from stored workflow events.
-- Add workflow/task status projection models.
+- Define [[Queue Broker]] interface.
+- Implement dependency-aware in-memory local queue.
 
 ## Backend Foundation Tasks
 
-- Implement [[Checkpoint Engine]] replay.
-- Define [[Queue Broker]] interface.
-- Implement in-memory local queue.
 - Define [[Provider Router]] interface.
 - Implement mock provider.
 - Implement local [[Worker]] execution loop.

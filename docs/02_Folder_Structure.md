@@ -40,6 +40,9 @@ backend/
 |   |   |-- api/
 |   |   |-- cache/
 |   |   |-- checkpoint/
+|   |   |   |-- __init__.py
+|   |   |   |-- models.py
+|   |   |   `-- replay.py
 |   |   |-- config/
 |   |   |-- dag/
 |   |   |   |-- __init__.py
@@ -57,6 +60,7 @@ backend/
 |   `-- ather_os_backend.egg-info/
 `-- tests/
     |-- __init__.py
+    |-- test_checkpoint_replay.py
     |-- test_dag_models.py
     |-- test_dag_validators.py
     |-- test_sqlite_state_store.py
@@ -70,13 +74,15 @@ backend/
 
 `backend/src/ather_os/state/` now contains the local [[State Store]] foundation: lifecycle event models, a minimal storage protocol, and a SQLite-backed append-only event store.
 
+`backend/src/ather_os/checkpoint/` now contains the local [[Checkpoint Engine]] replay foundation: projection models, status enums, and a pure event replay function.
+
 `backend/src/ather_os_backend.egg-info/` appears to be generated package metadata from an editable install and is ignored by `.gitignore`.
 
 `backend/.venv/` and `backend/.pytest_cache/` exist locally but are ignored by `.gitignore`; they are not project source.
 
 `backend/samples/` contains one valid workflow JSON file and two intentionally invalid workflow JSON files used by tests and manual validation.
 
-`backend/tests/` contains focused tests for DAG models, DAG validators, the sample workflow validation command, state events, and the SQLite state store.
+`backend/tests/` contains focused tests for DAG models, DAG validators, the sample workflow validation command, state events, the SQLite state store, and checkpoint replay.
 
 ## Frontend
 
@@ -93,11 +99,12 @@ The `docs/` folder is this Obsidian knowledge base. It is the single source of t
 
 ## Relationship Map
 
-- [[Backend]] owns [[DAG Models]], [[DAG Validator]], sample workflow JSON files, the workflow validation command, and the local [[State Store]] foundation today.
+- [[Backend]] owns [[DAG Models]], [[DAG Validator]], sample workflow JSON files, the workflow validation command, the local [[State Store]] foundation, and the local [[Checkpoint Engine]] replay foundation today.
 - [[Frontend]] depends on future [[04_APIs|APIs]], but no dependency exists in code yet.
 - [[04_APIs|APIs]] will depend on [[DAG Models]] when implemented.
 - [[State Store]] has lifecycle event models, a storage protocol, and a SQLite implementation.
-- [[Queue Broker]], [[Response Cache]], [[Provider Router]], [[Checkpoint Engine]], and [[Worker]] are named backend package boundaries with no implementation.
+- [[Checkpoint Engine]] has status projection models and event replay logic.
+- [[Queue Broker]], [[Response Cache]], [[Provider Router]], and [[Worker]] are named backend package boundaries with no implementation.
 
 ## Related
 
