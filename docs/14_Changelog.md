@@ -4,6 +4,14 @@
 
 This changelog records repository state changes that are visible from the audited files.
 
+## 2026-07-13
+
+- Added typed workflow/task lifecycle events in `backend/src/ather_os/state/events.py`.
+- Added the minimal [[State Store]] protocol in `backend/src/ather_os/state/store.py`.
+- Added `SQLiteStateStore` in `backend/src/ather_os/state/sqlite.py` using Python's standard `sqlite3` module.
+- Added pytest coverage for lifecycle event validation, event JSON parsing, SQLite append ordering, workflow filtering, persistence across store instances, and duplicate event IDs.
+- Added [[State Store]] documentation and updated architecture, database, state management, roadmap, tasks, decisions, current status, and folder structure docs to reflect the implemented persistence foundation.
+
 ## 2026-07-09
 
 - Renamed and reformatted the project master document as `AtherOS_Project_Master_Document.md` for easier Markdown viewing.

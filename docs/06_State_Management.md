@@ -2,13 +2,19 @@
 
 [[README|Knowledge Base Home]] > State Management
 
-State management is planned but not implemented.
+State management is partially implemented.
 
 ## Current State
 
-There is no application state store, no frontend state management, no database-backed state, and no event replay engine.
+The backend now has an append-only local [[State Store]] foundation:
 
-The only state-like structure in current source code is data carried by [[Workflow Model]] and [[Task Model]] instances. Pydantic validates this data in memory, and [[DAG Validator]] validates dependency structure before future stateful execution systems rely on it.
+- Typed lifecycle event models in `backend/src/ather_os/state/events.py`.
+- A minimal `StateStore` protocol in `backend/src/ather_os/state/store.py`.
+- A SQLite-backed implementation in `backend/src/ather_os/state/sqlite.py`.
+
+There is still no frontend state management, checkpoint replay engine, task status projection, queue integration, worker loop, or API state endpoint.
+
+[[Workflow Model]] and [[Task Model]] instances are still validated in memory before state is persisted. Pydantic validates field shape, and [[DAG Validator]] validates dependency structure before future stateful execution systems rely on it.
 
 ## Backend State Boundaries
 
@@ -19,7 +25,7 @@ The repository contains package placeholders for planned state-related systems:
 - [[Queue Broker]] at `backend/src/ather_os/queue`
 - [[Response Cache]] at `backend/src/ather_os/cache`
 
-Each currently contains only an `__init__.py` docstring.
+Only [[State Store]] has real implementation. The other packages currently contain only an `__init__.py` docstring.
 
 ## Intended Event-Sourced Flow
 
@@ -33,7 +39,7 @@ flowchart LR
     Replay --> WorkflowState["Reconstructed Workflow State"]
 ```
 
-This flow is not implemented yet.
+The append-event and list-events portions of this flow are implemented in [[State Store]]. Replay is still planned.
 
 ## Frontend State
 
@@ -44,17 +50,16 @@ Not applicable. The [[Frontend]] has no application code or state library.
 - [[Task Model]] currently stores `dependencies`, `context_needs`, retry budget, quality tier, and estimated token count.
 - [[Workflow Model]] groups tasks under a workflow ID and goal.
 - [[DAG Validator]] verifies that workflow dependencies are executable before future state transitions are recorded.
-- Future [[State Store]] should persist workflow and task events derived from [[DAG Models]].
+- [[State Store]] persists workflow and task lifecycle events.
 - Future [[Checkpoint Engine]] should reconstruct current task status from persisted events.
 - Future [[Queue Broker]] should determine which [[Task Model]] instances are executable based on dependencies.
 
 ## Missing State Work
 
-- Define event types.
-- Define `StateStore` interface.
-- Implement SQLite local storage.
-- Implement replay logic.
-- Add task status projection.
+- Implement checkpoint replay.
+- Add workflow status query.
+- Add task status query.
+- Integrate workflow submission with [[DAG Models]] and [[DAG Validator]].
 - Add tests for future dependency scheduling and recovery behavior.
 
 ## Related

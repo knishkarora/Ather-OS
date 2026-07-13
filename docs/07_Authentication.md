@@ -26,7 +26,7 @@ Because [[04_APIs|APIs]] are not implemented, there is no request authentication
 
 ## Relationship to Database
 
-Because [[03_Database|Database]] is not implemented, there are no user tables, sessions, refresh tokens, API keys, or ownership relationships.
+The current [[03_Database|Database]] work is limited to workflow events. There are no user tables, sessions, refresh tokens, API keys, or ownership relationships.
 
 ## Future Questions
 

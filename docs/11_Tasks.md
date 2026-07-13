@@ -12,12 +12,11 @@ This task list is based on the audited current implementation.
 
 ## Immediate Engineering Tasks
 
-- Define local [[State Store]] interface.
-- Define event models for workflow/task lifecycle.
+- Define [[Checkpoint Engine]] replay from stored workflow events.
+- Add workflow/task status projection models.
 
 ## Backend Foundation Tasks
 
-- Implement SQLite local event store.
 - Implement [[Checkpoint Engine]] replay.
 - Define [[Queue Broker]] interface.
 - Implement in-memory local queue.

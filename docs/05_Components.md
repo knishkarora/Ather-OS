@@ -104,6 +104,20 @@ It uses the existing [[DAG Models]] and [[DAG Validator]] rather than introducin
 
 The command is intentionally minimal. It validates local JSON samples only; it does not submit workflows, persist state, or execute tasks.
 
+### State Store
+
+Implemented in `backend/src/ather_os/state/`.
+
+[[State Store]] exposes:
+
+- Lifecycle event models in `events.py`.
+- `StateStore` protocol in `store.py`.
+- `SQLiteStateStore` in `sqlite.py`.
+
+The current event model covers workflow submission, task queue/start/completion/failure, and workflow completion/failure. The SQLite implementation appends events to a `workflow_events` table and lists events for a workflow in append order.
+
+This component does not yet project workflow status, replay checkpoints, schedule tasks, or execute work.
+
 ## Placeholder Backend Component Boundaries
 
 The following backend packages exist but contain no executable implementation:
@@ -114,7 +128,6 @@ The following backend packages exist but contain no executable implementation:
 - [[Configuration]]: `backend/src/ather_os/config`
 - [[Provider Router]]: `backend/src/ather_os/providers`
 - [[Queue Broker]]: `backend/src/ather_os/queue`
-- [[State Store]]: `backend/src/ather_os/state`
 - [[Worker]]: `backend/src/ather_os/worker`
 
 ## Frontend Components
@@ -134,6 +147,10 @@ flowchart TD
     Validator --> Dependencies
     Command["Workflow Validation Command"] --> Workflow
     Command --> Validator
+    StateStore["State Store"] --> Events["Workflow Events"]
+    StateStore --> SQLite["SQLite Event Store"]
+    Events --> Workflow
+    Events --> Task
 ```
 
 ## Related

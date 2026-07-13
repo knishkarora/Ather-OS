@@ -49,12 +49,18 @@ backend/
 |   |   |-- providers/
 |   |   |-- queue/
 |   |   |-- state/
+|   |   |   |-- __init__.py
+|   |   |   |-- events.py
+|   |   |   |-- sqlite.py
+|   |   |   `-- store.py
 |   |   `-- worker/
 |   `-- ather_os_backend.egg-info/
 `-- tests/
     |-- __init__.py
     |-- test_dag_models.py
     |-- test_dag_validators.py
+    |-- test_sqlite_state_store.py
+    |-- test_state_events.py
     `-- test_validate_workflow_command.py
 ```
 
@@ -62,13 +68,15 @@ backend/
 
 `backend/src/ather_os/dag/models.py` is the implemented domain model file. `backend/src/ather_os/dag/validators.py` validates workflow graph structure. `backend/src/ather_os/dag/validate_workflow.py` loads workflow JSON files and validates both model constraints and DAG structure.
 
+`backend/src/ather_os/state/` now contains the local [[State Store]] foundation: lifecycle event models, a minimal storage protocol, and a SQLite-backed append-only event store.
+
 `backend/src/ather_os_backend.egg-info/` appears to be generated package metadata from an editable install and is ignored by `.gitignore`.
 
 `backend/.venv/` and `backend/.pytest_cache/` exist locally but are ignored by `.gitignore`; they are not project source.
 
 `backend/samples/` contains one valid workflow JSON file and two intentionally invalid workflow JSON files used by tests and manual validation.
 
-`backend/tests/` contains focused tests for DAG models, DAG validators, and the sample workflow validation command.
+`backend/tests/` contains focused tests for DAG models, DAG validators, the sample workflow validation command, state events, and the SQLite state store.
 
 ## Frontend
 
@@ -85,10 +93,11 @@ The `docs/` folder is this Obsidian knowledge base. It is the single source of t
 
 ## Relationship Map
 
-- [[Backend]] owns [[DAG Models]], [[DAG Validator]], sample workflow JSON files, and the workflow validation command today.
+- [[Backend]] owns [[DAG Models]], [[DAG Validator]], sample workflow JSON files, the workflow validation command, and the local [[State Store]] foundation today.
 - [[Frontend]] depends on future [[04_APIs|APIs]], but no dependency exists in code yet.
 - [[04_APIs|APIs]] will depend on [[DAG Models]] when implemented.
-- [[State Store]], [[Queue Broker]], [[Response Cache]], [[Provider Router]], [[Checkpoint Engine]], and [[Worker]] are named backend package boundaries with no implementation.
+- [[State Store]] has lifecycle event models, a storage protocol, and a SQLite implementation.
+- [[Queue Broker]], [[Response Cache]], [[Provider Router]], [[Checkpoint Engine]], and [[Worker]] are named backend package boundaries with no implementation.
 
 ## Related
 

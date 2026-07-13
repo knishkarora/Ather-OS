@@ -2,11 +2,19 @@
 
 [[README|Knowledge Base Home]] > Database
 
-There is no database implementation in the current codebase.
+The current database implementation is a minimal local SQLite event store.
 
 ## Current State
 
-The repository contains a `backend/src/ather_os/state/` package with this docstring: "State storage interfaces and implementations." No interfaces, models, migrations, SQLite connections, PostgreSQL clients, SQLAlchemy models, or database schemas exist.
+The repository contains a [[State Store]] implementation under `backend/src/ather_os/state/`.
+
+Implemented files:
+
+- `events.py`: workflow/task lifecycle event models.
+- `store.py`: minimal append/list state store protocol.
+- `sqlite.py`: SQLite-backed append-only event store.
+
+No PostgreSQL clients, SQLAlchemy models, migrations, workflow tables, task tables, or projection tables exist.
 
 The `.gitignore` excludes `*.db`, `*.sqlite`, and `*.sqlite3`, which suggests local SQLite files are expected later but should not be committed.
 
@@ -21,17 +29,23 @@ The implemented data structures are Pydantic request/domain schemas in [[DAG Mod
 
 These are not database tables. They are in-memory validation models defined in `backend/src/ather_os/dag/models.py` and validation logic defined in `backend/src/ather_os/dag/validators.py`.
 
-## Planned Storage Model
+## Implemented Storage Model
 
-The project vision describes event sourcing, where task state changes are appended as events instead of overwritten. Planned concepts include:
+The implemented storage model is event sourcing, where workflow and task state changes are appended as events instead of overwritten.
 
-- [[State Store]]
-- [[Checkpoint Engine]]
-- Task events such as TaskClaimed, TaskExecuted, TaskSucceeded, TaskFailed, and TaskRetried
-- Response cache records
-- Workflow replay from an event log
+The SQLite table is `workflow_events` and stores:
 
-None of these event models or tables currently exist in code.
+- append sequence
+- event ID
+- workflow ID
+- optional task ID
+- event type
+- occurrence timestamp
+- full JSON event payload
+
+The current event names are simpler than the early vision language: `task_queued`, `task_started`, `task_completed`, and `task_failed`.
+
+[[Checkpoint Engine]] replay, response cache records, and derived workflow/task status projections are still planned.
 
 ## Model Relationships
 
@@ -40,21 +54,22 @@ Current implemented relationship:
 ```mermaid
 erDiagram
     WORKFLOW ||--|{ TASK : contains
+    WORKFLOW ||--|{ WORKFLOW_EVENT : records
+    TASK ||--o{ WORKFLOW_EVENT : references
 ```
 
 This diagram represents the Pydantic containment relationship only:
 
 - [[Workflow Model]] has a `tasks: list[Task]`.
 - [[Task Model]] has `dependencies: list[UUID]` referencing other task IDs.
+- [[State Store]] events reference workflow and task IDs as text in SQLite.
 - There is no database foreign key enforcement.
 
 ## Missing Database Work
 
-- Define [[State Store]] interface.
-- Choose local SQLite implementation.
-- Add event schema.
-- Add workflow/task persistence if needed.
 - Add replay queries for [[Checkpoint Engine]].
+- Add workflow/task status projections.
+- Add event idempotency policy beyond unique event IDs.
 - Add tests for idempotent recovery.
 
 ## Related

@@ -54,11 +54,27 @@ Related: [[Task Model]], [[Workflow Model]], [[11_Tasks|Tasks]]
 
 ## Preserve Backend Package Boundaries Early
 
-The backend contains empty packages for API, cache, checkpoint, config, providers, queue, state, and worker before implementation.
+The backend introduced package boundaries for API, cache, checkpoint, config, providers, queue, state, and worker early. [[State Store]] now has implementation; the other boundaries are still placeholders.
 
 Evidence: package directories under `backend/src/ather_os`.
 
 Related: [[02_Folder_Structure|Folder Structure]], [[01_Architecture|Architecture]]
+
+## Use Append-Only Events for Local State
+
+[[State Store]] persists workflow and task lifecycle changes as events instead of mutable workflow/task rows.
+
+Reason: Phase 0 needs crash recovery and replay later. An append-only event log gives [[Checkpoint Engine]] a simple source of truth without introducing projections before they are needed.
+
+Related: [[03_Database|Database]], [[06_State_Management|State Management]], [[State Store]]
+
+## Use Standard Library SQLite for Local Event Storage
+
+`SQLiteStateStore` uses Python's built-in `sqlite3` module.
+
+Reason: the project values minimal dependencies, and local SQLite is enough for the first durable event log. Heavier database libraries can wait until the schema or query surface actually needs them.
+
+Related: [[03_Database|Database]], [[State Store]]
 
 ## Keep Frontend Placeholder
 
@@ -71,7 +87,6 @@ Related: [[08_UI_System|UI System]], [[Frontend]]
 ## Open Decisions
 
 - Which DAG validator module and API should be used?
-- Which database library should implement local SQLite storage?
 - Should FastAPI be introduced before or after the local engine works without HTTP?
 - How should local mode handle authentication?
 - Which frontend framework should be used?

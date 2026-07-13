@@ -106,6 +106,55 @@ Add the validator immediately after the models, before writing any worker or API
 code. It is much easier to build execution logic when the graph rules are
 already clear.
 
+## Milestone: Monday, 13 July 2026
+
+We added the first durable state foundation for Ather OS: a local append-only
+workflow event store.
+
+What we completed:
+
+- added typed lifecycle events in `backend/src/ather_os/state/events.py`
+- added a minimal `StateStore` protocol in `backend/src/ather_os/state/store.py`
+- added `SQLiteStateStore` in `backend/src/ather_os/state/sqlite.py`
+- used Python's built-in `sqlite3` module instead of adding a dependency
+- stored full event JSON payloads while also indexing workflow IDs
+- added tests for event validation, JSON parsing, append ordering, workflow
+  filtering, persistence across store instances, and duplicate event IDs
+- confirmed the backend test suite passes with 34 tests
+- updated the `/docs` knowledge base so state and database docs now reflect
+  actual implementation instead of planned intent
+
+Why this mattered:
+
+The project now has somewhere real to put workflow history. The engine still
+does not execute tasks, but future checkpoint replay, queue scheduling, worker
+execution, and API status endpoints can now depend on a small durable event log
+instead of inventing state storage later.
+
+The main design decision:
+
+We kept the state store deliberately small: append one event and list events for
+one workflow. No projections, no deletion, no ORM, no migration layer, and no
+status query yet. That keeps the learning surface clear and leaves the next
+module, checkpoint replay, with an obvious job.
+
+What I learned from this:
+
+Event sourcing becomes easier to reason about when the first implementation is
+plain. A single table with a sequence number, event type, workflow ID, optional
+task ID, and JSON payload is enough to prove the storage pattern before building
+the more interesting replay logic.
+
+What I would do differently next time:
+
+Start with the event names even earlier. They force useful questions about the
+workflow lifecycle: when a task is queued, when an attempt starts, what counts as
+completion, and what failure detail needs to be kept for recovery.
+
+Supporting evidence:
+
+- `docs/journey-assets/2026-07-13-state-store-tests.md`
+
 ## Future Journey Updates
 
 This file should stay readable. We will not update it after every tiny edit.

@@ -18,24 +18,29 @@ This is the audited state of the repository.
 - Pytest coverage for [[DAG Models]] field constraints in `backend/tests/test_dag_models.py`.
 - Pytest coverage for [[DAG Validator]] in `backend/tests/test_dag_validators.py`.
 - Pytest coverage for sample workflow validation in `backend/tests/test_validate_workflow_command.py`.
-- Placeholder package boundaries for [[04_APIs|APIs]], [[Response Cache]], [[Checkpoint Engine]], [[Configuration]], [[Provider Router]], [[Queue Broker]], [[State Store]], and [[Worker]].
+- Typed workflow/task lifecycle event models in `backend/src/ather_os/state/events.py`.
+- Minimal [[State Store]] protocol in `backend/src/ather_os/state/store.py`.
+- SQLite-backed append-only event store in `backend/src/ather_os/state/sqlite.py`.
+- Pytest coverage for state event validation and SQLite event persistence.
+- Placeholder package boundaries for [[04_APIs|APIs]], [[Response Cache]], [[Checkpoint Engine]], [[Configuration]], [[Provider Router]], [[Queue Broker]], and [[Worker]].
 - Placeholder [[Frontend]] README.
 - `.gitignore` for Python, local databases, env files, frontend build outputs, and editor metadata.
 
 ## Partially Completed
 
-- [[Backend]] structure exists, but most packages contain only docstrings.
+- [[Backend]] structure exists, but several packages still contain only docstrings.
 - [[DAG Models]] validate field shapes and basic constraints.
 - [[DAG Validator]] validates duplicate task IDs, unknown dependencies, self-dependencies, cycles, multiple roots, and disconnected roots.
 - The validation command loads local workflow JSON and validates it, but does not execute or persist workflows.
+- [[State Store]] can append and list events, but no higher-level workflow submission or replay code uses it yet.
 - Test configuration exists in `pyproject.toml`, and focused DAG model, validator, and validation command tests now exist.
 - A local virtual environment exists and contains installed dependencies, but the global shell PATH does not expose `pytest`.
 
 ## Missing
 
 - FastAPI app and routes.
-- Database/state store implementation.
-- Event models and migrations.
+- Database migrations.
+- Workflow/task status projections.
 - Checkpoint recovery.
 - Response cache.
 - Queue broker.
@@ -47,7 +52,7 @@ This is the audited state of the repository.
 - Environment configuration code.
 - Deployment configuration.
 - CI configuration.
-- Tests outside the implemented DAG foundation.
+- Tests for future API, queue, checkpoint, provider, worker, and cache behavior.
 
 ## Verification
 
@@ -57,7 +62,7 @@ Command run from `backend/`:
 .\.venv\Scripts\pytest.exe
 ```
 
-Result: pytest started successfully using Python 3.12.13, collected 24 items, and all 24 tests passed.
+Result: pytest started successfully using Python 3.12.13, collected 34 items, and all 34 tests passed.
 
 Running plain `pytest` from the shell failed because `pytest` is not on PATH.
 
@@ -75,6 +80,8 @@ Running plain `pytest` from the shell failed because `pytest` is not on PATH.
 - Task quality defaults to `standard`.
 - Task dependencies are represented as UUID references and can now be structurally validated with [[DAG Validator]].
 - A workflow graph is expected to have exactly one root task with no dependencies.
+- Workflow and task lifecycle changes are persisted as append-only events.
+- SQLite events store UUIDs and timestamps as text plus the full event JSON payload.
 
 ## Related
 
