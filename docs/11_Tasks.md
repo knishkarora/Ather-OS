@@ -12,14 +12,13 @@ This task list is based on the audited current implementation.
 
 ## Immediate Engineering Tasks
 
-- Define [[Queue Broker]] interface.
-- Implement dependency-aware in-memory local queue.
+- Integrate [[Queue Broker]] with append-only [[State Store]] events.
+- Begin local [[Worker]] execution loop.
 
 ## Backend Foundation Tasks
 
 - Define [[Provider Router]] interface.
 - Implement mock provider.
-- Implement local [[Worker]] execution loop.
 - Add FastAPI app under [[04_APIs|APIs]].
 
 ## Frontend Tasks

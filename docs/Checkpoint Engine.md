@@ -58,7 +58,7 @@ Replay raises `CheckpointReplayError` for empty event lists, event logs that do 
 
 - Replay is pure in-memory logic; it does not query [[State Store]] by itself.
 - There is no API endpoint for workflow or task status yet.
-- There is no queue scheduling logic yet.
+- Queue scheduling exists in [[Queue Broker]], but replay is not integrated with it yet.
 - There is no worker recovery loop yet.
 
 ## Related

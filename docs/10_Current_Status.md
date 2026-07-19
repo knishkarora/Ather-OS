@@ -25,7 +25,10 @@ This is the audited state of the repository.
 - [[Checkpoint Engine]] status projection models in `backend/src/ather_os/checkpoint/models.py`.
 - [[Checkpoint Engine]] event replay in `backend/src/ather_os/checkpoint/replay.py`.
 - Pytest coverage for checkpoint replay behavior and invalid event logs.
-- Placeholder package boundaries for [[04_APIs|APIs]], [[Response Cache]], [[Configuration]], [[Provider Router]], [[Queue Broker]], and [[Worker]].
+- Minimal [[Queue Broker]] protocol in `backend/src/ather_os/queue/broker.py`.
+- Dependency-aware in-memory queue in `backend/src/ather_os/queue/memory.py`.
+- Pytest coverage for queue submission, task claiming, dependency unblocking, duplicate workflow submissions, and unknown workflow/task errors.
+- Placeholder package boundaries for [[04_APIs|APIs]], [[Response Cache]], [[Configuration]], [[Provider Router]], and [[Worker]].
 - Placeholder [[Frontend]] README.
 - `.gitignore` for Python, local databases, env files, frontend build outputs, and editor metadata.
 
@@ -35,7 +38,7 @@ This is the audited state of the repository.
 - [[DAG Models]] validate field shapes and basic constraints.
 - [[DAG Validator]] validates duplicate task IDs, unknown dependencies, self-dependencies, cycles, multiple roots, and disconnected roots.
 - The validation command loads local workflow JSON and validates it, but does not execute or persist workflows.
-- [[State Store]] can append and list events, and [[Checkpoint Engine]] can replay listed events into workflow/task status snapshots.
+- [[State Store]] can append and list events, [[Checkpoint Engine]] can replay listed events into workflow/task status snapshots, and [[Queue Broker]] can schedule ready tasks in memory.
 - Test configuration exists in `pyproject.toml`, and focused DAG model, validator, and validation command tests now exist.
 - A local virtual environment exists and contains installed dependencies, but the global shell PATH does not expose `pytest`.
 
@@ -46,7 +49,6 @@ This is the audited state of the repository.
 - Integrated workflow/task status query API.
 - Worker checkpoint recovery loop.
 - Response cache.
-- Queue broker.
 - Provider router.
 - Mock provider.
 - Worker loop.
@@ -65,13 +67,13 @@ Command run from `backend/`:
 .\.venv\Scripts\pytest.exe
 ```
 
-Result: pytest started successfully using Python 3.12.13, collected 43 items, and all 43 tests passed.
+Result: pytest started successfully using Python 3.12.13, collected 51 items, and all 51 tests passed.
 
 Running plain `pytest` from the shell failed because `pytest` is not on PATH.
 
 ## Known Mismatch
 
-`AtherOS_Project_Master_Document.md` states that Stage 0 features are built, including storage, event sourcing, checkpoint recovery, cache, mock provider, worker, and REST API. The audited source code now includes local storage, event sourcing, and in-memory checkpoint replay foundations, but cache, mock provider, worker, and REST API implementations are still missing. Treat remaining Stage 0 claims as aspirational or stale until code is added.
+`AtherOS_Project_Master_Document.md` states that Stage 0 features are built, including storage, event sourcing, checkpoint recovery, cache, mock provider, worker, and REST API. The audited source code now includes local storage, event sourcing, in-memory checkpoint replay, and in-memory queue scheduling foundations, but cache, mock provider, worker, and REST API implementations are still missing. Treat remaining Stage 0 claims as aspirational or stale until code is added.
 
 ## Current Assumptions in Code
 
@@ -87,6 +89,8 @@ Running plain `pytest` from the shell failed because `pytest` is not on PATH.
 - SQLite events store UUIDs and timestamps as text plus the full event JSON payload.
 - Checkpoint replay expects append-ordered events and starts with `workflow_submitted`.
 - Workflow/task snapshots are in-memory projections, not database tables.
+- The local queue keeps workflow scheduling state in memory only.
+- A task becomes queueable only after all dependency task IDs have completed.
 
 ## Related
 

@@ -2,7 +2,7 @@
 
 [[README|Knowledge Base Home]] > Architecture
 
-Ather OS is structured as a future full-stack system with a Python [[Backend]] execution engine and a future [[Frontend]] dashboard. The current repository implements the earliest backend domain schema layer, structural workflow graph validation, a local append-only [[State Store]] foundation, and [[Checkpoint Engine]] replay.
+Ather OS is structured as a future full-stack system with a Python [[Backend]] execution engine and a future [[Frontend]] dashboard. The current repository implements the earliest backend domain schema layer, structural workflow graph validation, a local append-only [[State Store]] foundation, [[Checkpoint Engine]] replay, and dependency-aware in-memory [[Queue Broker]] scheduling.
 
 ## Current Architecture
 
@@ -12,6 +12,7 @@ flowchart TD
     Docs --> Frontend["frontend/ placeholder"]
     Backend --> DAG["dag/models.py"]
     Backend --> Validator["dag/validators.py"]
+    Backend --> Queue["queue/"]
     Backend --> State["state/"]
     Backend --> Checkpoint["checkpoint/"]
     DAG --> Workflow["Workflow Model"]
@@ -19,6 +20,8 @@ flowchart TD
     Task --> TaskType["TaskType enum"]
     Task --> QualityTier["QualityTier enum"]
     Validator --> Workflow
+    Queue --> Workflow
+    Queue --> Validator
     State --> Events["events.py"]
     State --> Store["store.py"]
     State --> SQLite["sqlite.py"]
@@ -26,7 +29,7 @@ flowchart TD
     Checkpoint --> Replay["replay.py"]
 ```
 
-The active code paths are importable schema code under [[DAG Models]], structural validation under [[DAG Validator]], append-only event persistence under [[State Store]], and event replay under [[Checkpoint Engine]]. There is no running API app, no queue, no worker, no provider router, and no frontend application code yet.
+The active code paths are importable schema code under [[DAG Models]], structural validation under [[DAG Validator]], append-only event persistence under [[State Store]], event replay under [[Checkpoint Engine]], and local in-memory task scheduling under [[Queue Broker]]. There is no running API app, no worker, no provider router, and no frontend application code yet.
 
 ## Intended Architecture
 
@@ -58,7 +61,7 @@ This diagram is architectural intent, not current runtime behavior. Today, [[DAG
 - [[DAG Models]]: implemented in `backend/src/ather_os/dag/models.py`.
 - [[DAG Validator]]: implemented in `backend/src/ather_os/dag/validators.py`.
 - [[Provider Router]]: package exists at `backend/src/ather_os/providers`, but no router or mock provider exists.
-- [[Queue Broker]]: package exists at `backend/src/ather_os/queue`, but no queue implementation exists.
+- [[Queue Broker]]: implemented with a minimal protocol and dependency-aware in-memory queue.
 - [[State Store]]: implemented with lifecycle event models, a minimal storage protocol, and a local SQLite event store.
 - [[Worker]]: package exists at `backend/src/ather_os/worker`, but no execution loop exists.
 

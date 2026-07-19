@@ -13,7 +13,7 @@ The backend now has an append-only local [[State Store]] foundation:
 - A SQLite-backed implementation in `backend/src/ather_os/state/sqlite.py`.
 - [[Checkpoint Engine]] projection models and event replay in `backend/src/ather_os/checkpoint`.
 
-There is still no frontend state management, queue integration, worker loop, or API state endpoint.
+There is still no frontend state management, state-store-backed queue integration, worker loop, or API state endpoint.
 
 [[Workflow Model]] and [[Task Model]] instances are still validated in memory before state is persisted. Pydantic validates field shape, and [[DAG Validator]] validates dependency structure before future stateful execution systems rely on it.
 
@@ -26,7 +26,7 @@ The repository contains package placeholders for planned state-related systems:
 - [[Queue Broker]] at `backend/src/ather_os/queue`
 - [[Response Cache]] at `backend/src/ather_os/cache`
 
-[[State Store]] and [[Checkpoint Engine]] have real implementation. The queue and cache packages currently contain only an `__init__.py` docstring.
+[[State Store]], [[Checkpoint Engine]], and [[Queue Broker]] have real implementation. The cache package currently contains only an `__init__.py` docstring.
 
 ## Intended Event-Sourced Flow
 
@@ -53,14 +53,15 @@ Not applicable. The [[Frontend]] has no application code or state library.
 - [[DAG Validator]] verifies that workflow dependencies are executable before future state transitions are recorded.
 - [[State Store]] persists workflow and task lifecycle events.
 - [[Checkpoint Engine]] reconstructs current workflow/task status from persisted events.
-- Future [[Queue Broker]] should determine which [[Task Model]] instances are executable based on dependencies.
+- [[Queue Broker]] determines which [[Task Model]] instances are executable based on completed dependencies, but does not persist that state yet.
 
 ## Missing State Work
 
+- Integrate [[Queue Broker]] with [[State Store]] events.
 - Add workflow status query.
 - Add task status query.
-- Integrate workflow submission with [[DAG Models]] and [[DAG Validator]].
-- Add tests for future dependency scheduling and recovery behavior.
+- Integrate workflow submission with [[DAG Models]], [[DAG Validator]], and the queue.
+- Add tests for future recovery behavior.
 
 ## Related
 

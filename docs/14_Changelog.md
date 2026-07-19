@@ -4,6 +4,13 @@
 
 This changelog records repository state changes that are visible from the audited files.
 
+## 2026-07-19
+
+- Added the minimal [[Queue Broker]] protocol in `backend/src/ather_os/queue/broker.py`.
+- Added dependency-aware `InMemoryQueueBroker` in `backend/src/ather_os/queue/memory.py` using only standard Python data structures.
+- Added pytest coverage for queue submission, task claiming, dependency unblocking, duplicate workflow submission, and unknown workflow/task errors.
+- Added [[Queue Broker]] documentation and updated architecture, components, state management, current status, and tasks docs so the next backend step is worker integration.
+
 ## 2026-07-13
 
 - Added typed workflow/task lifecycle events in `backend/src/ather_os/state/events.py`.

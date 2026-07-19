@@ -131,6 +131,19 @@ The replay function reconstructs current workflow/task state from append-ordered
 
 The checkpoint engine does not query the database by itself, expose API status endpoints, schedule tasks, or restart workers.
 
+### Queue Broker
+
+Implemented in `backend/src/ather_os/queue/`.
+
+[[Queue Broker]] exposes:
+
+- `QueueBroker` protocol in `broker.py`.
+- `InMemoryQueueBroker` and `QueueBrokerError` in `memory.py`.
+
+The in-memory queue validates workflows with [[DAG Validator]], queues the root task on submission, returns ready tasks through `claim_next_task`, and queues dependent tasks only after all dependency task IDs have completed.
+
+This component does not persist queue state, emit [[State Store]] events, execute tasks, retry failures, or mark workflows complete. Those responsibilities remain future [[Worker]] and integration work.
+
 ## Placeholder Backend Component Boundaries
 
 The following backend packages exist but contain no executable implementation:
@@ -139,7 +152,6 @@ The following backend packages exist but contain no executable implementation:
 - [[Response Cache]]: `backend/src/ather_os/cache`
 - [[Configuration]]: `backend/src/ather_os/config`
 - [[Provider Router]]: `backend/src/ather_os/providers`
-- [[Queue Broker]]: `backend/src/ather_os/queue`
 - [[Worker]]: `backend/src/ather_os/worker`
 
 ## Frontend Components
@@ -165,6 +177,9 @@ flowchart TD
     Events --> Task
     Checkpoint["Checkpoint Engine"] --> Events
     Checkpoint --> Snapshot["Workflow Snapshot"]
+    Queue["Queue Broker"] --> Workflow
+    Queue --> Validator
+    Queue --> Task
 ```
 
 ## Related
