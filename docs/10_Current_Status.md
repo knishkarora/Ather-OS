@@ -28,6 +28,8 @@ This is the audited state of the repository.
 - Minimal [[Queue Broker]] protocol in `backend/src/ather_os/queue/broker.py`.
 - Dependency-aware in-memory queue in `backend/src/ather_os/queue/memory.py`.
 - Pytest coverage for queue submission, task claiming, dependency unblocking, duplicate workflow submissions, and unknown workflow/task errors.
+- [[Queue Lifecycle Service]] in `backend/src/ather_os/queue/lifecycle.py` coordinates local queue operations with append-only lifecycle events.
+- Pytest coverage for workflow submission events, task claim/completion events, dependency unblocking events, and invalid completion handling.
 - Placeholder package boundaries for [[04_APIs|APIs]], [[Response Cache]], [[Configuration]], [[Provider Router]], and [[Worker]].
 - Placeholder [[Frontend]] README.
 - `.gitignore` for Python, local databases, env files, frontend build outputs, and editor metadata.
@@ -38,7 +40,7 @@ This is the audited state of the repository.
 - [[DAG Models]] validate field shapes and basic constraints.
 - [[DAG Validator]] validates duplicate task IDs, unknown dependencies, self-dependencies, cycles, multiple roots, and disconnected roots.
 - The validation command loads local workflow JSON and validates it, but does not execute or persist workflows.
-- [[State Store]] can append and list events, [[Checkpoint Engine]] can replay listed events into workflow/task status snapshots, and [[Queue Broker]] can schedule ready tasks in memory.
+- [[State Store]] can append and list events, [[Checkpoint Engine]] can replay listed events into workflow/task status snapshots, and [[Queue Lifecycle Service]] records queue-driven lifecycle events for the in-memory [[Queue Broker]].
 - Test configuration exists in `pyproject.toml`, and focused DAG model, validator, and validation command tests now exist.
 - A local virtual environment exists and contains installed dependencies, but the global shell PATH does not expose `pytest`.
 
@@ -67,7 +69,7 @@ Command run from `backend/`:
 .\.venv\Scripts\pytest.exe
 ```
 
-Result: pytest started successfully using Python 3.12.13, collected 51 items, and all 51 tests passed.
+Result: pytest started successfully using Python 3.12.13, collected 54 items, and all 54 tests passed.
 
 Running plain `pytest` from the shell failed because `pytest` is not on PATH.
 
@@ -89,7 +91,7 @@ Running plain `pytest` from the shell failed because `pytest` is not on PATH.
 - SQLite events store UUIDs and timestamps as text plus the full event JSON payload.
 - Checkpoint replay expects append-ordered events and starts with `workflow_submitted`.
 - Workflow/task snapshots are in-memory projections, not database tables.
-- The local queue keeps workflow scheduling state in memory only.
+- The local queue keeps workflow scheduling state in memory only, while [[Queue Lifecycle Service]] appends related lifecycle events.
 - A task becomes queueable only after all dependency task IDs have completed.
 
 ## Related

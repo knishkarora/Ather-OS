@@ -63,7 +63,8 @@ Events are returned in append order by `sequence`. The stored JSON payload is pa
 - No workflow status query API yet.
 - No task status query API yet.
 - No event idempotency policy beyond the database uniqueness constraint.
-- No API, worker, or queue integration yet.
+- No API or worker integration yet.
+- [[Queue Lifecycle Service]] records submission, queueing, start, and successful completion events around local queue operations, but does not provide atomic queue-and-store writes or recovery.
 
 ## Related
 
@@ -71,4 +72,5 @@ Events are returned in append order by `sequence`. The stored JSON payload is pa
 - [[06_State_Management|State Management]]
 - [[Checkpoint Engine]]
 - [[Queue Broker]]
+- [[Queue Lifecycle Service]]
 - [[Worker]]

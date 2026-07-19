@@ -22,6 +22,8 @@ flowchart TD
     Validator --> Workflow
     Queue --> Workflow
     Queue --> Validator
+    Queue --> Lifecycle["lifecycle.py"]
+    Lifecycle --> State
     State --> Events["events.py"]
     State --> Store["store.py"]
     State --> SQLite["sqlite.py"]
@@ -29,7 +31,7 @@ flowchart TD
     Checkpoint --> Replay["replay.py"]
 ```
 
-The active code paths are importable schema code under [[DAG Models]], structural validation under [[DAG Validator]], append-only event persistence under [[State Store]], event replay under [[Checkpoint Engine]], and local in-memory task scheduling under [[Queue Broker]]. There is no running API app, no worker, no provider router, and no frontend application code yet.
+The active code paths are importable schema code under [[DAG Models]], structural validation under [[DAG Validator]], append-only event persistence under [[State Store]], event replay under [[Checkpoint Engine]], and local in-memory task scheduling under [[Queue Broker]]. [[Queue Lifecycle Service]] connects the queue and event store for local lifecycle operations. There is no running API app, no worker, no provider router, and no frontend application code yet.
 
 ## Intended Architecture
 
@@ -61,13 +63,13 @@ This diagram is architectural intent, not current runtime behavior. Today, [[DAG
 - [[DAG Models]]: implemented in `backend/src/ather_os/dag/models.py`.
 - [[DAG Validator]]: implemented in `backend/src/ather_os/dag/validators.py`.
 - [[Provider Router]]: package exists at `backend/src/ather_os/providers`, but no router or mock provider exists.
-- [[Queue Broker]]: implemented with a minimal protocol and dependency-aware in-memory queue.
+- [[Queue Broker]]: implemented with a minimal protocol, dependency-aware in-memory queue, and [[Queue Lifecycle Service]] for local event emission.
 - [[State Store]]: implemented with lifecycle event models, a minimal storage protocol, and a local SQLite event store.
 - [[Worker]]: package exists at `backend/src/ather_os/worker`, but no execution loop exists.
 
 ## Data Flow
 
-Current data flow supports in-memory validation when a developer instantiates [[Workflow Model]] or [[Task Model]] through Pydantic, then calls [[DAG Validator]] to validate dependency structure. After that, lifecycle events can be appended to and listed from [[State Store]], then replayed by [[Checkpoint Engine]] into workflow/task snapshots. There is still no API request flow or execution loop.
+Current data flow supports in-memory validation when a developer instantiates [[Workflow Model]] or [[Task Model]] through Pydantic, then calls [[DAG Validator]] to validate dependency structure. [[Queue Lifecycle Service]] submits the workflow to [[Queue Broker]] and appends its lifecycle events to [[State Store]]; it also records task claims, successful completion, and newly unblocked tasks. Stored events can be replayed by [[Checkpoint Engine]] into workflow/task snapshots. There is still no API request flow or execution loop.
 
 Planned data flow is documented as:
 

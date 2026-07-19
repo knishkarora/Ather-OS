@@ -12,8 +12,8 @@ This task list is based on the audited current implementation.
 
 ## Immediate Engineering Tasks
 
-- Integrate [[Queue Broker]] with append-only [[State Store]] events.
-- Begin local [[Worker]] execution loop.
+- Begin local [[Worker]] execution loop using [[Queue Lifecycle Service]].
+- Add workflow and task status queries from [[Checkpoint Engine]] replay.
 
 ## Backend Foundation Tasks
 

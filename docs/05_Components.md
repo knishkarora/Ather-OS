@@ -139,10 +139,11 @@ Implemented in `backend/src/ather_os/queue/`.
 
 - `QueueBroker` protocol in `broker.py`.
 - `InMemoryQueueBroker` and `QueueBrokerError` in `memory.py`.
+- `WorkflowQueueService` in `lifecycle.py`.
 
-The in-memory queue validates workflows with [[DAG Validator]], queues the root task on submission, returns ready tasks through `claim_next_task`, and queues dependent tasks only after all dependency task IDs have completed.
+The in-memory queue validates workflows with [[DAG Validator]], queues the root task on submission, returns ready tasks through `claim_next_task`, and queues dependent tasks only after all dependency task IDs have completed. [[Queue Lifecycle Service]] composes the broker with [[State Store]] so submission, queueing, task starts, and successful completion are recorded as lifecycle events.
 
-This component does not persist queue state, emit [[State Store]] events, execute tasks, retry failures, or mark workflows complete. Those responsibilities remain future [[Worker]] and integration work.
+The broker does not persist queue state, execute tasks, retry failures, or mark workflows complete. The lifecycle service does not execute tasks or recover queue state. Those responsibilities remain future [[Worker]] work.
 
 ## Placeholder Backend Component Boundaries
 
@@ -180,6 +181,8 @@ flowchart TD
     Queue["Queue Broker"] --> Workflow
     Queue --> Validator
     Queue --> Task
+    QueueLifecycle["Queue Lifecycle Service"] --> Queue
+    QueueLifecycle --> StateStore
 ```
 
 ## Related

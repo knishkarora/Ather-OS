@@ -18,14 +18,15 @@ Implemented:
 - Minimal [[State Store]] protocol.
 - SQLite append-only event store with pytest coverage.
 - [[Checkpoint Engine]] replay and workflow/task status projections with pytest coverage.
+- Dependency-aware [[Queue Broker]] scheduling with [[Queue Lifecycle Service]] event coordination.
 - Placeholder [[Frontend]] folder.
 - Root project and journey documentation.
 
 ## Next Logical Work
 
-1. Add [[Queue Broker]] for dependency-aware task scheduling.
+1. Add an in-process [[Worker]] execution loop using [[Queue Lifecycle Service]].
 2. Add mock [[Provider Router]] and mock provider.
-3. Add in-process [[Worker]] execution loop.
+3. Add workflow and task status queries from [[Checkpoint Engine]] replay.
 4. Add basic [[04_APIs|APIs]] once the backend engine has testable behavior.
 
 ## Phase 0 Vision

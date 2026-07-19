@@ -53,6 +53,7 @@ backend/
 |   |   |-- queue/
 |   |   |   |-- __init__.py
 |   |   |   |-- broker.py
+|   |   |   |-- lifecycle.py
 |   |   |   `-- memory.py
 |   |   |-- state/
 |   |   |   |-- __init__.py
@@ -79,7 +80,7 @@ backend/
 
 `backend/src/ather_os/checkpoint/` now contains the local [[Checkpoint Engine]] replay foundation: projection models, status enums, and a pure event replay function.
 
-`backend/src/ather_os/queue/` now contains the local [[Queue Broker]] foundation: a minimal scheduling protocol and dependency-aware in-memory queue.
+`backend/src/ather_os/queue/` now contains the local [[Queue Broker]] foundation: a minimal scheduling protocol, dependency-aware in-memory queue, and [[Queue Lifecycle Service]] that emits local lifecycle events through [[State Store]].
 
 `backend/src/ather_os_backend.egg-info/` appears to be generated package metadata from an editable install and is ignored by `.gitignore`.
 
@@ -87,7 +88,7 @@ backend/
 
 `backend/samples/` contains one valid workflow JSON file and two intentionally invalid workflow JSON files used by tests and manual validation.
 
-`backend/tests/` contains focused tests for DAG models, DAG validators, the sample workflow validation command, state events, the SQLite state store, checkpoint replay, and in-memory queue scheduling.
+`backend/tests/` contains focused tests for DAG models, DAG validators, the sample workflow validation command, state events, the SQLite state store, checkpoint replay, in-memory queue scheduling, and queue lifecycle event coordination.
 
 ## Frontend
 
@@ -109,7 +110,7 @@ The `docs/` folder is this Obsidian knowledge base. It is the single source of t
 - [[04_APIs|APIs]] will depend on [[DAG Models]] when implemented.
 - [[State Store]] has lifecycle event models, a storage protocol, and a SQLite implementation.
 - [[Checkpoint Engine]] has status projection models and event replay logic.
-- [[Queue Broker]] has a scheduling protocol and dependency-aware in-memory implementation.
+- [[Queue Broker]] has a scheduling protocol, dependency-aware in-memory implementation, and event-coordinating [[Queue Lifecycle Service]].
 - [[Response Cache]], [[Provider Router]], and [[Worker]] are named backend package boundaries with no implementation.
 
 ## Related

@@ -19,7 +19,11 @@ The queue package now contains:
 - `mark_task_completed(workflow_id: UUID, task_id: UUID) -> list[Task]`
 - `claim_next_task(workflow_id: UUID) -> Task | None`
 
-The contract stays intentionally small. It does not persist state, execute tasks, emit lifecycle events, retry failures, or mark workflows complete.
+The contract stays intentionally small. It does not persist state, execute tasks, retry failures, or mark workflows complete.
+
+## Lifecycle Integration
+
+[[Queue Lifecycle Service]] composes a `QueueBroker` with a [[State Store]]. It appends `workflow_submitted`, `task_queued`, `task_started`, and `task_completed` events around local queue operations. The broker remains focused only on dependency-aware scheduling.
 
 ## In-Memory Scheduling
 
@@ -36,7 +40,6 @@ Scheduling rules:
 ## Current Limits
 
 - Queue state is in-memory only and disappears when the process exits.
-- There is no integration with [[State Store]] events yet.
 - There is no [[Worker]] loop to claim and execute tasks yet.
 - There is no retry, lease, timeout, priority, or concurrency policy yet.
 
@@ -44,6 +47,7 @@ Scheduling rules:
 
 - [[DAG Validator]]
 - [[State Store]]
+- [[Queue Lifecycle Service]]
 - [[Checkpoint Engine]]
 - [[Worker]]
 - [[11_Tasks|Tasks]]

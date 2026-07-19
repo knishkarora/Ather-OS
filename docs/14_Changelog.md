@@ -6,6 +6,9 @@ This changelog records repository state changes that are visible from the audite
 
 ## 2026-07-19
 
+- Added [[Queue Lifecycle Service]] in `backend/src/ather_os/queue/lifecycle.py` to coordinate local queue transitions with append-only lifecycle events.
+- Added pytest coverage for submission, task claim/completion, dependency unblocking event order, and invalid completion handling.
+- Updated the knowledge base so the next engineering step is an in-process [[Worker]] loop using the lifecycle service.
 - Added the minimal [[Queue Broker]] protocol in `backend/src/ather_os/queue/broker.py`.
 - Added dependency-aware `InMemoryQueueBroker` in `backend/src/ather_os/queue/memory.py` using only standard Python data structures.
 - Added pytest coverage for queue submission, task claiming, dependency unblocking, duplicate workflow submission, and unknown workflow/task errors.
