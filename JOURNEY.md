@@ -204,6 +204,51 @@ Supporting evidence:
 
 - `docs/journey-assets/2026-07-13-checkpoint-replay-tests.md`
 
+## Milestone: Tuesday, 21 July 2026
+
+We connected the local queue, event log, provider boundary, worker, and
+checkpoint query into the first end-to-end execution slice.
+
+What we completed:
+
+- added the `TaskProvider` protocol and deterministic `MockProvider`
+- added `WorkflowWorker` for sequential dependency-aware task execution
+- recorded `task_failed` and `workflow_failed` when provider execution raises
+- recorded `workflow_completed` after the final task completes
+- added `WorkflowStatusQuery` to replay stored events into current snapshots
+- added tests for successful DAG execution, dependency order, final completion,
+  and terminal provider failure
+- confirmed the backend test suite passes with 57 tests
+- updated the roadmap, task list, current status, bugs, changelog, and this
+  journey log
+
+Why this mattered:
+
+The project now proves the central local loop: a submitted workflow can move
+from queued tasks through provider execution to a replayable final state. The
+worker is intentionally small and sequential, which makes the lifecycle easy
+to inspect before adding HTTP, retries, caching, or recovery behavior.
+
+The main design decision:
+
+For this first execution slice, a provider exception is terminal for the task
+and workflow. Retry policy is left for a later checkpoint so it can be designed
+against persisted attempts and restart behavior instead of being hidden inside
+the worker loop.
+
+What I learned from this:
+
+The queue does not become an execution engine until its transitions are tied to
+events and a provider boundary. Once those contracts were explicit, the worker
+could remain a thin coordinator and the checkpoint replay layer became the
+single way to inspect the result.
+
+What comes next:
+
+The next checkpoint is a small API for workflow submission and replay-backed
+status inspection. After that, the worker can gain checkpoint recovery from
+persisted events, followed by response caching and provider routing.
+
 ## Future Journey Updates
 
 This file should stay readable. We will not update it after every tiny edit.

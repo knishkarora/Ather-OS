@@ -46,6 +46,16 @@ class InMemoryQueueBroker:
         queue.completed_task_ids.add(task_id)
         return self._queue_ready_tasks(queue)
 
+    def mark_task_failed(self, workflow_id: UUID, task_id: UUID) -> None:
+        queue = self._get_queue(workflow_id)
+        self._ensure_known_task(queue, workflow_id, task_id)
+        queue.claimed_task_ids.discard(task_id)
+        queue.queued_task_ids.discard(task_id)
+
+    def is_workflow_complete(self, workflow_id: UUID) -> bool:
+        queue = self._get_queue(workflow_id)
+        return len(queue.completed_task_ids) == len(queue.tasks_by_id)
+
     def claim_next_task(self, workflow_id: UUID) -> Task | None:
         queue = self._get_queue(workflow_id)
 

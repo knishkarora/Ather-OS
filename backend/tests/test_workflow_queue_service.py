@@ -4,7 +4,13 @@ import pytest
 
 from ather_os.dag import Task, TaskType, Workflow
 from ather_os.queue import InMemoryQueueBroker, QueueBrokerError, WorkflowQueueService
-from ather_os.state import TaskCompleted, TaskQueued, TaskStarted, WorkflowSubmitted
+from ather_os.state import (
+    TaskCompleted,
+    TaskQueued,
+    TaskStarted,
+    WorkflowCompleted,
+    WorkflowSubmitted,
+)
 
 
 WORKFLOW_ID = UUID("00000000-0000-0000-0000-000000000001")
@@ -76,6 +82,22 @@ def test_invalid_completion_does_not_append_event() -> None:
         service.complete_task(WORKFLOW_ID, UNKNOWN_TASK, "Unexpected task")
 
     assert len(state_store.events) == 2
+
+
+def test_completing_final_task_records_workflow_completion() -> None:
+    state_store = MemoryStateStore()
+    service = WorkflowQueueService(InMemoryQueueBroker(), state_store)
+    workflow = Workflow(
+        workflow_id=WORKFLOW_ID,
+        goal="Single task workflow",
+        tasks=[_task(TASK_A)],
+    )
+    service.submit_workflow(workflow)
+    service.claim_next_task(WORKFLOW_ID)
+
+    service.complete_task(WORKFLOW_ID, TASK_A, "Finished task A")
+
+    assert isinstance(state_store.events[-1], WorkflowCompleted)
 
 
 def _workflow() -> Workflow:

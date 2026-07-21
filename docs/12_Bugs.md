@@ -6,17 +6,17 @@ This file tracks known bugs, mismatches, and risks in the current repository.
 
 ## Documentation Mismatch
 
-`AtherOS_Project_Master_Document.md` says Stage 0 is built and lists several implemented features. The actual codebase implements the DAG foundation, sample validation, local [[State Store]] foundation, and [[Checkpoint Engine]] replay foundation, but not the full engine.
+`AtherOS_Project_Master_Document.md` says Stage 0 is built and lists several implemented features. The actual codebase implements the DAG foundation, sample validation, local [[State Store]], checkpoint replay, a deterministic mock provider, and a sequential in-process worker, but not the full engine.
 
-Impact: future contributors or AI agents may assume non-existent APIs, cache, worker, provider routing, or full restart recovery code exists.
+Impact: future contributors or AI agents may assume non-existent APIs, cache, provider routing, or full restart recovery code exists.
 
 Related: [[10_Current_Status|Current Status]], [[09_Roadmap|Roadmap]]
 
 ## Limited Tests
 
-`backend/pyproject.toml` configures pytest, and the DAG, state-store, and checkpoint replay foundations now have focused tests. Future engine tests are still missing because queue, worker, cache, provider router, and API are not implemented yet.
+`backend/pyproject.toml` configures pytest, and the DAG, state-store, checkpoint replay, queue, mock provider, and local worker have focused tests. API, cache, provider routing, retry, and restart-recovery coverage is still missing.
 
-Impact: DAG schema, graph validation, state event persistence, and replay behavior are protected, but future execution behavior is not covered yet.
+Impact: DAG schema, graph validation, state event persistence, replay behavior, and basic local execution are protected, but future service and recovery behavior is not covered yet.
 
 Related: [[11_Tasks|Tasks]], [[05_Components|Components]]
 

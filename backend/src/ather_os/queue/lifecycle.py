@@ -4,8 +4,11 @@ from ather_os.dag.models import Task, Workflow
 from ather_os.queue.broker import QueueBroker
 from ather_os.state.events import (
     TaskCompleted,
+    TaskFailed,
     TaskQueued,
     TaskStarted,
+    WorkflowCompleted,
+    WorkflowFailed,
     WorkflowSubmitted,
 )
 from ather_os.state.store import StateStore
@@ -61,7 +64,18 @@ class WorkflowQueueService:
         ready_tasks = self._broker.mark_task_completed(workflow_id, task_id)
         self._state_store.append_event(completed_event)
         self._append_queued_tasks(workflow_id, ready_tasks)
+        if self._broker.is_workflow_complete(workflow_id):
+            self._state_store.append_event(WorkflowCompleted(workflow_id=workflow_id))
         return ready_tasks
+
+    def fail_task(self, workflow_id: UUID, task_id: UUID, error: str) -> None:
+        """Record a terminal task failure and stop the workflow."""
+
+        self._broker.mark_task_failed(workflow_id, task_id)
+        self._state_store.append_event(
+            TaskFailed(workflow_id=workflow_id, task_id=task_id, error=error)
+        )
+        self._state_store.append_event(WorkflowFailed(workflow_id=workflow_id, error=error))
 
     def _append_queued_tasks(self, workflow_id: UUID, tasks: list[Task]) -> None:
         for task in tasks:

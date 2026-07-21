@@ -12,14 +12,13 @@ This task list is based on the audited current implementation.
 
 ## Immediate Engineering Tasks
 
-- Begin local [[Worker]] execution loop using [[Queue Lifecycle Service]].
-- Add workflow and task status queries from [[Checkpoint Engine]] replay.
+- Add FastAPI workflow submission and replay-backed status routes.
+- Design worker checkpoint recovery from persisted event history.
 
 ## Backend Foundation Tasks
 
 - Define [[Provider Router]] interface.
-- Implement mock provider.
-- Add FastAPI app under [[04_APIs|APIs]].
+- Add response caching around provider execution.
 
 ## Frontend Tasks
 

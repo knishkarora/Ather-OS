@@ -19,15 +19,17 @@ Implemented:
 - SQLite append-only event store with pytest coverage.
 - [[Checkpoint Engine]] replay and workflow/task status projections with pytest coverage.
 - Dependency-aware [[Queue Broker]] scheduling with [[Queue Lifecycle Service]] event coordination.
+- Replay-backed workflow/task status queries.
+- Deterministic mock provider and in-process [[Worker]] execution with terminal failure recording.
 - Placeholder [[Frontend]] folder.
 - Root project and journey documentation.
 
 ## Next Logical Work
 
-1. Add an in-process [[Worker]] execution loop using [[Queue Lifecycle Service]].
-2. Add mock [[Provider Router]] and mock provider.
-3. Add workflow and task status queries from [[Checkpoint Engine]] replay.
-4. Add basic [[04_APIs|APIs]] once the backend engine has testable behavior.
+1. Add basic [[04_APIs|APIs]] for workflow submission and replay-backed status inspection.
+2. Add worker checkpoint recovery from persisted events.
+3. Define a provider router once more than the deterministic mock provider is needed.
+4. Add a response cache around provider execution.
 
 ## Phase 0 Vision
 
@@ -37,11 +39,11 @@ The project documents describe Phase 0 as a local backend engine with:
 - Event-sourced state. The local append-only [[State Store]] now exists.
 - Checkpoint recovery. In-memory replay and status projections now exist; worker restart behavior does not.
 - Response caching.
-- Mock provider execution.
-- In-process worker.
+- Mock provider execution. A deterministic implementation now exists.
+- In-process worker. A sequential local implementation now exists; restart recovery does not.
 - Small API for running and inspecting workflows.
 
-The schema, graph validation, local event storage, and checkpoint replay parts currently exist.
+The schema, graph validation, local event storage, checkpoint replay, local provider, and worker execution parts currently exist.
 
 ## Later Vision
 

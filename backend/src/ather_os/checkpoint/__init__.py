@@ -7,6 +7,7 @@ from ather_os.checkpoint.models import (
     WorkflowStatus,
 )
 from ather_os.checkpoint.replay import CheckpointReplayError, replay_workflow
+from ather_os.checkpoint.query import WorkflowStatusQuery
 
 __all__ = [
     "CheckpointReplayError",
@@ -14,5 +15,6 @@ __all__ = [
     "TaskStatus",
     "WorkflowSnapshot",
     "WorkflowStatus",
+    "WorkflowStatusQuery",
     "replay_workflow",
 ]

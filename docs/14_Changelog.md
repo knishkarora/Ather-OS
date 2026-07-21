@@ -4,6 +4,15 @@
 
 This changelog records repository state changes that are visible from the audited files.
 
+## 2026-07-21
+
+- Added `TaskProvider` and deterministic `MockProvider` under `backend/src/ather_os/providers/`.
+- Added `WorkflowWorker` under `backend/src/ather_os/worker/` to execute dependency-ready tasks through [[Queue Lifecycle Service]].
+- Added terminal task/workflow failure recording and final workflow completion recording to [[Queue Lifecycle Service]].
+- Added replay-backed `WorkflowStatusQuery` for current workflow/task snapshots from a [[State Store]].
+- Added execution tests covering dependency ordering, successful completion, and provider failure; the backend suite now has 57 passing tests.
+- Updated roadmap, tasks, current status, and bugs documentation to reflect the completed local execution slice.
+
 ## 2026-07-19
 
 - Added [[Queue Lifecycle Service]] in `backend/src/ather_os/queue/lifecycle.py` to coordinate local queue transitions with append-only lifecycle events.

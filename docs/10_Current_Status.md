@@ -29,8 +29,11 @@ This is the audited state of the repository.
 - Dependency-aware in-memory queue in `backend/src/ather_os/queue/memory.py`.
 - Pytest coverage for queue submission, task claiming, dependency unblocking, duplicate workflow submissions, and unknown workflow/task errors.
 - [[Queue Lifecycle Service]] in `backend/src/ather_os/queue/lifecycle.py` coordinates local queue operations with append-only lifecycle events.
-- Pytest coverage for workflow submission events, task claim/completion events, dependency unblocking events, and invalid completion handling.
-- Placeholder package boundaries for [[04_APIs|APIs]], [[Response Cache]], [[Configuration]], [[Provider Router]], and [[Worker]].
+- `WorkflowStatusQuery` replays stored workflow events into the current workflow/task snapshot.
+- `TaskProvider` protocol and deterministic `MockProvider` implementation for local execution.
+- `WorkflowWorker` runs a workflow through the queue lifecycle service, records terminal failures, and records workflow completion after the final task.
+- Pytest coverage for workflow submission events, task claim/completion events, dependency unblocking events, final workflow completion, invalid completion handling, dependency-ordered worker execution, and provider failures.
+- Placeholder package boundaries for [[04_APIs|APIs]], [[Response Cache]], [[Configuration]], and [[Provider Router]].
 - Placeholder [[Frontend]] README.
 - `.gitignore` for Python, local databases, env files, frontend build outputs, and editor metadata.
 
@@ -40,7 +43,8 @@ This is the audited state of the repository.
 - [[DAG Models]] validate field shapes and basic constraints.
 - [[DAG Validator]] validates duplicate task IDs, unknown dependencies, self-dependencies, cycles, multiple roots, and disconnected roots.
 - The validation command loads local workflow JSON and validates it, but does not execute or persist workflows.
-- [[State Store]] can append and list events, [[Checkpoint Engine]] can replay listed events into workflow/task status snapshots, and [[Queue Lifecycle Service]] records queue-driven lifecycle events for the in-memory [[Queue Broker]].
+- [[State Store]] can append and list events, [[Checkpoint Engine]] can replay listed events into workflow/task status snapshots, and `WorkflowStatusQuery` exposes that replay against a state store.
+- The in-process [[Worker]] executes ready tasks sequentially with the deterministic mock provider and uses [[Queue Lifecycle Service]] to persist queue-driven lifecycle events.
 - Test configuration exists in `pyproject.toml`, and focused DAG model, validator, and validation command tests now exist.
 - A local virtual environment exists and contains installed dependencies, but the global shell PATH does not expose `pytest`.
 
@@ -52,8 +56,6 @@ This is the audited state of the repository.
 - Worker checkpoint recovery loop.
 - Response cache.
 - Provider router.
-- Mock provider.
-- Worker loop.
 - Frontend app.
 - Authentication.
 - Environment configuration code.
@@ -69,13 +71,13 @@ Command run from `backend/`:
 .\.venv\Scripts\pytest.exe
 ```
 
-Result: pytest started successfully using Python 3.12.13, collected 54 items, and all 54 tests passed.
+Result: pytest started successfully using Python 3.12.13, collected 57 items, and all 57 tests passed.
 
 Running plain `pytest` from the shell failed because `pytest` is not on PATH.
 
 ## Known Mismatch
 
-`AtherOS_Project_Master_Document.md` states that Stage 0 features are built, including storage, event sourcing, checkpoint recovery, cache, mock provider, worker, and REST API. The audited source code now includes local storage, event sourcing, in-memory checkpoint replay, and in-memory queue scheduling foundations, but cache, mock provider, worker, and REST API implementations are still missing. Treat remaining Stage 0 claims as aspirational or stale until code is added.
+`AtherOS_Project_Master_Document.md` states that Stage 0 features are built, including storage, event sourcing, checkpoint recovery, cache, mock provider, worker, and REST API. The audited source code now includes local storage, event sourcing, in-memory checkpoint replay, in-memory queue scheduling, a deterministic mock provider, and a local worker. Cache, restart recovery, provider routing, and REST API implementations are still missing. Treat those remaining Stage 0 claims as aspirational or stale until code is added.
 
 ## Current Assumptions in Code
 
@@ -93,6 +95,7 @@ Running plain `pytest` from the shell failed because `pytest` is not on PATH.
 - Workflow/task snapshots are in-memory projections, not database tables.
 - The local queue keeps workflow scheduling state in memory only, while [[Queue Lifecycle Service]] appends related lifecycle events.
 - A task becomes queueable only after all dependency task IDs have completed.
+- The local worker executes one queued task at a time and treats a provider exception as a terminal workflow failure.
 
 ## Related
 
