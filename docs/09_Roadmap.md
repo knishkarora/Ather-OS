@@ -26,10 +26,10 @@ Implemented:
 
 ## Next Logical Work
 
-1. Add basic [[04_APIs|APIs]] for workflow submission and replay-backed status inspection.
-2. Add worker checkpoint recovery from persisted events.
+1. Add worker checkpoint recovery from persisted events.
+2. Add a response cache around provider execution.
 3. Define a provider router once more than the deterministic mock provider is needed.
-4. Add a response cache around provider execution.
+4. Add asynchronous execution and event inspection routes once the local recovery contract is defined.
 
 ## Phase 0 Vision
 

@@ -6,15 +6,15 @@ This file tracks known bugs, mismatches, and risks in the current repository.
 
 ## Documentation Mismatch
 
-`AtherOS_Project_Master_Document.md` says Stage 0 is built and lists several implemented features. The actual codebase implements the DAG foundation, sample validation, local [[State Store]], checkpoint replay, a deterministic mock provider, and a sequential in-process worker, but not the full engine.
+`AtherOS_Project_Master_Document.md` says Stage 0 is built and lists several implemented features. The actual codebase implements the DAG foundation, sample validation, local [[State Store]], checkpoint replay, a deterministic mock provider, a sequential in-process worker, and a small local API, but not the full engine.
 
-Impact: future contributors or AI agents may assume non-existent APIs, cache, provider routing, or full restart recovery code exists.
+Impact: future contributors or AI agents may assume cache, provider routing, asynchronous APIs, or full restart recovery code exists.
 
 Related: [[10_Current_Status|Current Status]], [[09_Roadmap|Roadmap]]
 
 ## Limited Tests
 
-`backend/pyproject.toml` configures pytest, and the DAG, state-store, checkpoint replay, queue, mock provider, and local worker have focused tests. API, cache, provider routing, retry, and restart-recovery coverage is still missing.
+`backend/pyproject.toml` configures pytest, and the DAG, state-store, checkpoint replay, queue, mock provider, local worker, and synchronous API have focused tests. Cache, provider routing, retry, asynchronous API, and restart-recovery coverage is still missing.
 
 Impact: DAG schema, graph validation, state event persistence, replay behavior, and basic local execution are protected, but future service and recovery behavior is not covered yet.
 
@@ -30,9 +30,9 @@ Related: [[10_Current_Status|Current Status]]
 
 ## No Runtime Entry Point
 
-FastAPI and Uvicorn are dependencies, but there is no app module or command to start a server.
+The API's default SQLite path is a local working-directory file, and configuration has not been introduced yet.
 
-Impact: the backend cannot currently run as an API service.
+Impact: local runs are useful for development but do not yet have environment-specific database configuration.
 
 Related: [[04_APIs|APIs]], [[11_Tasks|Tasks]]
 

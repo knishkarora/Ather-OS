@@ -6,6 +6,13 @@ This changelog records repository state changes that are visible from the audite
 
 ## 2026-07-21
 
+- Added the FastAPI application in `backend/src/ather_os/api/app.py` with synchronous workflow submission and persisted replay-backed status routes.
+- Added API tests for successful execution, status retrieval after app recreation, invalid graphs, missing workflows, and duplicate IDs.
+- Added `httpx` as an explicit development dependency for FastAPI endpoint tests.
+- Updated the backend README and API, roadmap, status, tasks, bugs, and journey documentation for the completed API slice.
+
+## 2026-07-21
+
 - Added `TaskProvider` and deterministic `MockProvider` under `backend/src/ather_os/providers/`.
 - Added `WorkflowWorker` under `backend/src/ather_os/worker/` to execute dependency-ready tasks through [[Queue Lifecycle Service]].
 - Added terminal task/workflow failure recording and final workflow completion recording to [[Queue Lifecycle Service]].

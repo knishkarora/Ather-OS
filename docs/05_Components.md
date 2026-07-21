@@ -129,7 +129,7 @@ Implemented in `backend/src/ather_os/checkpoint/`.
 
 The replay function reconstructs current workflow/task state from append-ordered [[State Store]] events. It starts from `workflow_submitted`, creates pending task snapshots, then applies task and workflow lifecycle events in order.
 
-The checkpoint engine does not query the database by itself, expose API status endpoints, schedule tasks, or restart workers.
+The checkpoint engine does not query the database by itself, schedule tasks, or restart workers. `WorkflowStatusQuery` supplies events from a [[State Store]] before calling replay; the API uses that query to expose workflow status.
 
 ### Queue Broker
 
@@ -141,19 +141,35 @@ Implemented in `backend/src/ather_os/queue/`.
 - `InMemoryQueueBroker` and `QueueBrokerError` in `memory.py`.
 - `WorkflowQueueService` in `lifecycle.py`.
 
-The in-memory queue validates workflows with [[DAG Validator]], queues the root task on submission, returns ready tasks through `claim_next_task`, and queues dependent tasks only after all dependency task IDs have completed. [[Queue Lifecycle Service]] composes the broker with [[State Store]] so submission, queueing, task starts, and successful completion are recorded as lifecycle events.
+The in-memory queue validates workflows with [[DAG Validator]], queues the root task on submission, returns ready tasks through `claim_next_task`, and queues dependent tasks only after all dependency task IDs have completed. [[Queue Lifecycle Service]] composes the broker with [[State Store]] so submission, queueing, task starts, completion, and terminal failure are recorded as lifecycle events.
 
-The broker does not persist queue state, execute tasks, retry failures, or mark workflows complete. The lifecycle service does not execute tasks or recover queue state. Those responsibilities remain future [[Worker]] work.
+The broker does not persist queue state, execute tasks, or retry failures. The lifecycle service records workflow completion after the final task and records terminal workflow failure, while [[Worker]] owns task execution. Queue recovery remains future work.
+
+### Provider and Worker
+
+Implemented in `backend/src/ather_os/providers/` and `backend/src/ather_os/worker/`.
+
+`TaskProvider` defines execution of one task. `MockProvider` returns deterministic
+output and can be configured to fail specific task IDs for testing.
+`WorkflowWorker` repeatedly claims ready tasks, executes them through a provider,
+records outputs or terminal failures through [[Queue Lifecycle Service]], and
+returns the replayed workflow snapshot.
+
+### API Layer
+
+Implemented in `backend/src/ather_os/api/app.py`.
+
+`create_app` composes SQLite storage, the in-memory queue, lifecycle service,
+mock provider, worker, and status query. The synchronous `POST /workflows` and
+`GET /workflows/{workflow_id}` routes make the local execution path available
+over HTTP.
 
 ## Placeholder Backend Component Boundaries
 
 The following backend packages exist but contain no executable implementation:
 
-- [[04_APIs|APIs]]: `backend/src/ather_os/api`
 - [[Response Cache]]: `backend/src/ather_os/cache`
 - [[Configuration]]: `backend/src/ather_os/config`
-- [[Provider Router]]: `backend/src/ather_os/providers`
-- [[Worker]]: `backend/src/ather_os/worker`
 
 ## Frontend Components
 

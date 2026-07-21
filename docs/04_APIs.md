@@ -2,29 +2,43 @@
 
 [[README|Knowledge Base Home]] > APIs
 
-There are no implemented HTTP API routes in the current codebase.
+The local FastAPI application is implemented in
+`backend/src/ather_os/api/app.py`.
 
 ## Current State
 
-`backend/src/ather_os/api/__init__.py` exists and contains only a package docstring: "HTTP API layer for Ather OS." There is no FastAPI app instance, no `APIRouter`, no endpoint function, and no server entrypoint.
+`create_app(database_path, provider)` wires a local SQLite [[State Store]],
+in-memory [[Queue Broker]], [[Queue Lifecycle Service]], deterministic mock
+provider, [[Worker]], and replay-backed [[Checkpoint Engine]] query.
 
-FastAPI and Uvicorn are listed as dependencies in `backend/pyproject.toml`, but the audited source code does not import either.
+The module exports `app`, so it can be run from `backend/` with:
 
-## Planned API Responsibility
+```powershell
+.\.venv\Scripts\uvicorn.exe ather_os.api.app:app --reload
+```
 
-Based on the project README and backend README, the API layer is intended to provide endpoints for:
+The default local event database is `ather-os.sqlite3` in the working directory.
 
-- Submitting workflows.
-- Inspecting workflow status.
-- Viewing task and event progress.
+## Routes
 
-These planned endpoints would likely accept or return [[Workflow Model]] and [[Task Model]] objects, but no route contracts currently exist.
+### `POST /workflows`
 
-## Current API Calls
+Accepts a [[Workflow Model]], validates its graph, persists lifecycle events,
+executes it synchronously with the deterministic mock provider, and returns a
+`WorkflowSnapshot`.
 
-None.
+- `201 Created`: workflow completed or failed during local execution.
+- `409 Conflict`: the workflow ID already exists.
+- `422 Unprocessable Content`: Pydantic request validation or graph validation
+  failed.
 
-No page, component, service, or worker calls an API because neither the [[Frontend]] nor the backend API implementation exists yet.
+### `GET /workflows/{workflow_id}`
+
+Loads events from the [[State Store]] and returns their replayed
+`WorkflowSnapshot`.
+
+- `200 OK`: persisted workflow found.
+- `404 Not Found`: no stored workflow exists for the ID.
 
 ## Intended Dependencies
 
@@ -35,16 +49,20 @@ flowchart LR
     API --> Queue["Queue Broker"]
 ```
 
-This relationship is planned only. Current source-level dependency is absent.
+This relationship is implemented for synchronous local execution.
 
-## Missing API Work
+## Tests
 
-- Create FastAPI application entrypoint.
-- Define request and response schemas.
-- Add endpoint for workflow submission.
-- Add endpoint for workflow inspection.
-- Connect API routes to [[State Store]] and [[Queue Broker]] once those exist.
-- Add API tests.
+`backend/tests/test_api.py` covers successful submission, persisted status
+retrieval through a new app instance, invalid graph rejection, unknown workflow
+lookup, and duplicate workflow IDs.
+
+## Current Limits
+
+- Execution is synchronous within the `POST` request.
+- The queue is in-memory and does not recover claimed tasks after a restart.
+- The only provider is deterministic and local.
+- There is no authentication, cache, event-list endpoint, or API versioning.
 
 ## Related
 

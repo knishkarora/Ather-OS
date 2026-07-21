@@ -249,6 +249,33 @@ The next checkpoint is a small API for workflow submission and replay-backed
 status inspection. After that, the worker can gain checkpoint recovery from
 persisted events, followed by response caching and provider routing.
 
+## Milestone: Tuesday, 21 July 2026
+
+We exposed the local execution engine through its first HTTP API.
+
+What we completed:
+
+- added a FastAPI application factory and Uvicorn entrypoint
+- added `POST /workflows` to validate, persist, execute, and return a workflow
+- added `GET /workflows/{workflow_id}` to return persisted replayed status
+- wired SQLite storage, queue scheduling, worker execution, mock provider, and
+  checkpoint query into one local request path
+- added endpoint tests for successful execution, persistence across app
+  instances, invalid graphs, missing workflow IDs, and duplicate submissions
+- confirmed the backend suite passes with 62 tests
+
+Why this mattered:
+
+The engine can now be used as a service rather than only through Python code.
+The API stays intentionally narrow: it proves a complete submit-and-inspect
+flow without adding asynchronous jobs or a large route surface too early.
+
+What comes next:
+
+The next checkpoint is worker recovery from persisted events. That will define
+what happens to tasks interrupted between `task_started` and a terminal event;
+afterward, caching and provider routing can build on a clearer execution model.
+
 ## Future Journey Updates
 
 This file should stay readable. We will not update it after every tiny edit.

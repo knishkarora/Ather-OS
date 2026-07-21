@@ -12,13 +12,13 @@ This task list is based on the audited current implementation.
 
 ## Immediate Engineering Tasks
 
-- Add FastAPI workflow submission and replay-backed status routes.
 - Design worker checkpoint recovery from persisted event history.
+- Add response caching around provider execution.
 
 ## Backend Foundation Tasks
 
 - Define [[Provider Router]] interface.
-- Add response caching around provider execution.
+- Add asynchronous execution and workflow event inspection routes.
 
 ## Frontend Tasks
 

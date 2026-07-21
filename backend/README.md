@@ -23,3 +23,16 @@ From `backend/`:
 ```powershell
 .\.venv\Scripts\python.exe -m ather_os.dag.validate_workflow .\samples\valid_research_workflow.json
 ```
+
+## Run the Local API
+
+From `backend/`:
+
+```powershell
+.\.venv\Scripts\uvicorn.exe ather_os.api.app:app --reload
+```
+
+The local API uses `ather-os.sqlite3` for its append-only event log.
+
+- `POST /workflows` validates and executes a workflow with the deterministic mock provider.
+- `GET /workflows/{workflow_id}` returns the persisted replayed workflow snapshot.

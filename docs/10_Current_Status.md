@@ -32,6 +32,8 @@ This is the audited state of the repository.
 - `WorkflowStatusQuery` replays stored workflow events into the current workflow/task snapshot.
 - `TaskProvider` protocol and deterministic `MockProvider` implementation for local execution.
 - `WorkflowWorker` runs a workflow through the queue lifecycle service, records terminal failures, and records workflow completion after the final task.
+- FastAPI application with synchronous `POST /workflows` execution and replay-backed `GET /workflows/{workflow_id}` status retrieval.
+- Pytest coverage for API submission, validation, persisted status retrieval, missing workflows, and duplicate workflow IDs.
 - Pytest coverage for workflow submission events, task claim/completion events, dependency unblocking events, final workflow completion, invalid completion handling, dependency-ordered worker execution, and provider failures.
 - Placeholder package boundaries for [[04_APIs|APIs]], [[Response Cache]], [[Configuration]], and [[Provider Router]].
 - Placeholder [[Frontend]] README.
@@ -50,9 +52,7 @@ This is the audited state of the repository.
 
 ## Missing
 
-- FastAPI app and routes.
 - Database migrations.
-- Integrated workflow/task status query API.
 - Worker checkpoint recovery loop.
 - Response cache.
 - Provider router.
@@ -71,13 +71,13 @@ Command run from `backend/`:
 .\.venv\Scripts\pytest.exe
 ```
 
-Result: pytest started successfully using Python 3.12.13, collected 57 items, and all 57 tests passed.
+Result: pytest started successfully using Python 3.12.13, collected 62 items, and all 62 tests passed.
 
 Running plain `pytest` from the shell failed because `pytest` is not on PATH.
 
 ## Known Mismatch
 
-`AtherOS_Project_Master_Document.md` states that Stage 0 features are built, including storage, event sourcing, checkpoint recovery, cache, mock provider, worker, and REST API. The audited source code now includes local storage, event sourcing, in-memory checkpoint replay, in-memory queue scheduling, a deterministic mock provider, and a local worker. Cache, restart recovery, provider routing, and REST API implementations are still missing. Treat those remaining Stage 0 claims as aspirational or stale until code is added.
+`AtherOS_Project_Master_Document.md` states that Stage 0 features are built, including storage, event sourcing, checkpoint recovery, cache, mock provider, worker, and REST API. The audited source code now includes local storage, event sourcing, in-memory checkpoint replay, in-memory queue scheduling, a deterministic mock provider, a local worker, and a small REST API. Cache, restart recovery, and provider routing are still missing. Treat those remaining Stage 0 claims as aspirational or stale until code is added.
 
 ## Current Assumptions in Code
 
