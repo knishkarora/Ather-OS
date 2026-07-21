@@ -30,17 +30,50 @@ class WorkflowQueueService:
                 workflow_id=workflow.workflow_id,
                 goal=workflow.goal,
                 task_ids=[task.task_id for task in workflow.tasks],
+                workflow=workflow,
             )
         )
         self._append_queued_tasks(workflow.workflow_id, ready_tasks)
         return ready_tasks
 
-    def claim_next_task(self, workflow_id: UUID, attempt: int = 1) -> Task | None:
+    def restore_workflow(
+        self,
+        workflow: Workflow,
+        completed_task_ids: set[UUID],
+        queued_task_ids: list[UUID],
+        interrupted_task_ids: list[UUID],
+    ) -> list[Task]:
+        """Restore queue state and record tasks requeued after interruption."""
+
+        restored_tasks = self._broker.restore_workflow(
+            workflow,
+            completed_task_ids,
+            [*queued_task_ids, *interrupted_task_ids],
+        )
+        task_by_id = {task.task_id: task for task in workflow.tasks}
+        self._append_queued_tasks(
+            workflow.workflow_id,
+            [task_by_id[task_id] for task_id in interrupted_task_ids],
+        )
+        self._append_queued_tasks(workflow.workflow_id, restored_tasks)
+        if self._broker.is_workflow_complete(workflow.workflow_id):
+            self._state_store.append_event(WorkflowCompleted(workflow_id=workflow.workflow_id))
+        return restored_tasks
+
+    def claim_next_task(
+        self,
+        workflow_id: UUID,
+        attempt: int = 1,
+        prior_attempts: dict[UUID, int] | None = None,
+    ) -> Task | None:
         """Claim the next task and record the beginning of its attempt."""
 
         task = self._broker.claim_next_task(workflow_id)
         if task is None:
             return None
+
+        if prior_attempts is not None:
+            attempt = prior_attempts.get(task.task_id, 0) + 1
 
         self._state_store.append_event(
             TaskStarted(

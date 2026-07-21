@@ -10,6 +10,14 @@ class QueueBroker(Protocol):
     def submit_workflow(self, workflow: Workflow) -> list[Task]:
         """Add a workflow and return tasks ready to run immediately."""
 
+    def restore_workflow(
+        self,
+        workflow: Workflow,
+        completed_task_ids: set[UUID],
+        queued_task_ids: list[UUID],
+    ) -> list[Task]:
+        """Restore queue state and return newly ready tasks without events."""
+
     def mark_task_completed(self, workflow_id: UUID, task_id: UUID) -> list[Task]:
         """Mark a task complete and return newly unblocked tasks."""
 

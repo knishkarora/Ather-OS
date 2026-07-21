@@ -36,3 +36,4 @@ The local API uses `ather-os.sqlite3` for its append-only event log.
 
 - `POST /workflows` validates and executes a workflow with the deterministic mock provider.
 - `GET /workflows/{workflow_id}` returns the persisted replayed workflow snapshot.
+- `POST /workflows/{workflow_id}/recover` rebuilds local queue state and resumes an unfinished workflow.

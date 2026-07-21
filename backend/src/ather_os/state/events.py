@@ -6,6 +6,8 @@ from uuid import UUID, uuid4
 
 from pydantic import BaseModel, Field
 
+from ather_os.dag.models import Workflow
+
 
 class WorkflowEventType(StrEnum):
     """Event names stored in the append-only workflow event log."""
@@ -35,6 +37,7 @@ class WorkflowSubmitted(EventBase):
     )
     goal: str = Field(min_length=1)
     task_ids: list[UUID] = Field(min_length=1)
+    workflow: Workflow | None = None
 
 
 class TaskQueued(EventBase):

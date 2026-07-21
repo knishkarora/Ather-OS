@@ -34,6 +34,34 @@ class InMemoryQueueBroker:
         self._workflows[workflow.workflow_id] = queue
         return self._queue_ready_tasks(queue)
 
+    def restore_workflow(
+        self,
+        workflow: Workflow,
+        completed_task_ids: set[UUID],
+        queued_task_ids: list[UUID],
+    ) -> list[Task]:
+        """Rebuild volatile queue state from a replayed event stream."""
+
+        validate_workflow_graph(workflow)
+
+        if workflow.workflow_id in self._workflows:
+            raise QueueBrokerError(f"Workflow {workflow.workflow_id} is already queued.")
+
+        queue = _WorkflowQueue(tasks_by_id={task.task_id: task for task in workflow.tasks})
+        self._workflows[workflow.workflow_id] = queue
+        self._ensure_known_task_ids(queue, workflow.workflow_id, completed_task_ids)
+        self._ensure_known_task_ids(queue, workflow.workflow_id, queued_task_ids)
+        if completed_task_ids.intersection(queued_task_ids):
+            raise QueueBrokerError("Completed tasks cannot be restored as queued.")
+
+        queue.completed_task_ids.update(completed_task_ids)
+        for task in workflow.tasks:
+            if task.task_id in queued_task_ids:
+                queue.queued_task_ids.add(task.task_id)
+                queue.ready_task_ids.append(task.task_id)
+
+        return self._queue_ready_tasks(queue)
+
     def mark_task_completed(self, workflow_id: UUID, task_id: UUID) -> list[Task]:
         queue = self._get_queue(workflow_id)
         self._ensure_known_task(queue, workflow_id, task_id)
@@ -98,3 +126,9 @@ class InMemoryQueueBroker:
     ) -> None:
         if task_id not in queue.tasks_by_id:
             raise QueueBrokerError(f"Task {task_id} is not part of workflow {workflow_id}.")
+
+    def _ensure_known_task_ids(
+        self, queue: _WorkflowQueue, workflow_id: UUID, task_ids: set[UUID] | list[UUID]
+    ) -> None:
+        for task_id in task_ids:
+            self._ensure_known_task(queue, workflow_id, task_id)

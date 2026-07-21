@@ -8,7 +8,7 @@ from ather_os.dag import DagValidationError, Workflow
 from ather_os.providers import MockProvider, TaskProvider
 from ather_os.queue import InMemoryQueueBroker, QueueBrokerError, WorkflowQueueService
 from ather_os.state import SQLiteStateStore
-from ather_os.worker import WorkflowWorker
+from ather_os.worker import WorkflowRecovery, WorkflowRecoveryError, WorkflowWorker
 
 
 def create_app(
@@ -20,13 +20,18 @@ def create_app(
     state_store = SQLiteStateStore(database_path)
     queue_service = WorkflowQueueService(InMemoryQueueBroker(), state_store)
     status_query = WorkflowStatusQuery(state_store)
-    worker = WorkflowWorker(queue_service, provider or MockProvider(), status_query)
+    task_provider = provider or MockProvider()
+    worker = WorkflowWorker(queue_service, task_provider, status_query)
+    recovery = WorkflowRecovery(
+        state_store, queue_service, task_provider, status_query
+    )
 
     app = FastAPI(title="Ather OS", version="0.1.0")
     app.state.state_store = state_store
     app.state.queue_service = queue_service
     app.state.status_query = status_query
     app.state.worker = worker
+    app.state.recovery = recovery
 
     @app.post(
         "/workflows",
@@ -67,6 +72,23 @@ def create_app(
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"Workflow {workflow_id} was not found.",
+            ) from error
+
+    @app.post("/workflows/{workflow_id}/recover", response_model=WorkflowSnapshot)
+    def recover_workflow(workflow_id: UUID) -> WorkflowSnapshot:
+        """Restore local queue state from events and resume an unfinished workflow."""
+
+        try:
+            return recovery.recover_workflow(workflow_id)
+        except CheckpointReplayError as error:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Workflow {workflow_id} was not found.",
+            ) from error
+        except WorkflowRecoveryError as error:
+            raise HTTPException(
+                status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
+                detail=str(error),
             ) from error
 
     return app

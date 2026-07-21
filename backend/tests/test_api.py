@@ -3,6 +3,9 @@ from uuid import UUID
 from fastapi.testclient import TestClient
 
 from ather_os.api import create_app
+from ather_os.dag import Workflow
+from ather_os.queue import InMemoryQueueBroker, WorkflowQueueService
+from ather_os.state import SQLiteStateStore
 
 
 WORKFLOW_ID = "00000000-0000-0000-0000-000000000001"
@@ -71,6 +74,21 @@ def test_submit_rejects_existing_workflow_id(tmp_path) -> None:
     response = client.post("/workflows", json=_workflow_payload())
 
     assert response.status_code == 409
+
+
+def test_recover_workflow_restores_interrupted_execution(tmp_path) -> None:
+    database_path = tmp_path / "ather-os.sqlite3"
+    store = SQLiteStateStore(database_path)
+    queue_service = WorkflowQueueService(InMemoryQueueBroker(), store)
+    queue_service.submit_workflow(Workflow.model_validate(_workflow_payload()))
+    queue_service.claim_next_task(UUID(WORKFLOW_ID))
+    client = TestClient(create_app(database_path))
+
+    response = client.post(f"/workflows/{WORKFLOW_ID}/recover")
+
+    assert response.status_code == 200
+    assert response.json()["status"] == "completed"
+    assert response.json()["tasks"][TASK_A]["attempt"] == 2
 
 
 def _workflow_payload() -> dict:
