@@ -30,7 +30,7 @@ The repository contains package placeholders for planned state-related systems:
 - [[Queue Broker]] at `backend/src/ather_os/queue`
 - [[Response Cache]] at `backend/src/ather_os/cache`
 
-[[State Store]], [[Checkpoint Engine]], and [[Queue Broker]] have real implementation. The cache package currently contains only an `__init__.py` docstring.
+[[State Store]], [[Checkpoint Engine]], [[Queue Broker]], and [[Response Cache]] have real implementation. The cache is deliberately process-local rather than event-sourced state.
 
 ## Intended Event-Sourced Flow
 
@@ -60,6 +60,7 @@ Not applicable. The [[Frontend]] has no application code or state library.
 - [[Checkpoint Engine]] reconstructs current workflow/task status from persisted events.
 - [[Queue Broker]] determines which [[Task Model]] instances are executable based on completed dependencies.
 - [[Queue Lifecycle Service]] coordinates the local queue with append-only events; [[Worker]] recovery rebuilds that local queue from persisted state when invoked.
+- [[Response Cache]] can reuse a successful provider output during one app process, but cache entries are neither persisted nor recovered.
 
 ## Missing State Work
 

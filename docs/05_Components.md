@@ -151,6 +151,9 @@ Implemented in `backend/src/ather_os/providers/` and `backend/src/ather_os/worke
 
 `TaskProvider` defines execution of one task. `MockProvider` returns deterministic
 output and can be configured to fail specific task IDs for testing.
+`CachedTaskProvider` decorates a provider with an `InMemoryResponseCache` that
+reuses successful outputs for equivalent task type, prompt, context needs, and
+quality tier during one app process. Failures are never cached.
 `WorkflowWorker` repeatedly claims ready tasks, executes them through a provider,
 records outputs or terminal failures through [[Queue Lifecycle Service]], and
 returns the replayed workflow snapshot.
@@ -168,11 +171,16 @@ mock provider, worker, and status query. The synchronous `POST /workflows` and
 `GET /workflows/{workflow_id}` routes make the local execution path available
 over HTTP.
 
+### Response Cache
+
+Implemented in `backend/src/ather_os/cache/store.py` and
+`backend/src/ather_os/providers/cached.py`. Cache entries are intentionally
+process-local and are not lifecycle events or checkpoint data.
+
 ## Placeholder Backend Component Boundaries
 
 The following backend packages exist but contain no executable implementation:
 
-- [[Response Cache]]: `backend/src/ather_os/cache`
 - [[Configuration]]: `backend/src/ather_os/config`
 
 ## Frontend Components

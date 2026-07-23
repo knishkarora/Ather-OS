@@ -6,6 +6,10 @@ This changelog records repository state changes that are visible from the audite
 
 ## 2026-07-23
 
+- Added a process-local `InMemoryResponseCache` and `CachedTaskProvider` around provider execution.
+- Cache keys cover output-affecting task fields, successful outputs are reused across equivalent tasks, and provider failures are not cached.
+- Added cache unit tests and API wiring coverage; the backend suite now has 71 passing tests.
+- Updated architecture, components, API, state-management, roadmap, status, task, and decision documentation for the completed caching slice.
 - Added `WorkflowRecovery` to rebuild an in-memory workflow queue from persisted lifecycle events and resume unfinished local workflows.
 - Requeues interrupted running tasks with incremented attempts, preserves completed outputs, and writes missing terminal workflow events after interrupted finalization.
 - Added `POST /workflows/{workflow_id}/recover` and focused API/recovery tests.

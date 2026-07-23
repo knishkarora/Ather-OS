@@ -10,10 +10,6 @@ This task list is based on the audited current implementation.
 - Update [[14_Changelog|Changelog]] when features are added.
 - Move stale roadmap claims into [[09_Roadmap|Roadmap]] if source code does not support them.
 
-## Immediate Engineering Tasks
-
-- Add response caching around provider execution.
-
 ## Backend Foundation Tasks
 
 - Define [[Provider Router]] interface.

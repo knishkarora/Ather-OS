@@ -29,7 +29,8 @@ flowchart TD
     API --> Lifecycle
     API --> Worker
     API --> Recovery["worker/recovery.py"]
-    Worker --> Provider
+    Worker --> Cache["cache/"]
+    Cache --> Provider
     Lifecycle --> State
     State --> Events["events.py"]
     State --> Store["store.py"]
@@ -38,7 +39,7 @@ flowchart TD
     Checkpoint --> Replay["replay.py"]
 ```
 
-The active code paths include [[DAG Models]], structural validation under [[DAG Validator]], append-only event persistence under [[State Store]], event replay under [[Checkpoint Engine]], local in-memory task scheduling under [[Queue Broker]], a deterministic provider, a sequential [[Worker]], explicit checkpoint recovery, and a FastAPI application. [[Queue Lifecycle Service]] connects queue transitions with the event store; the API composes those pieces into a synchronous local request flow. There is still no provider router or frontend application code.
+The active code paths include [[DAG Models]], structural validation under [[DAG Validator]], append-only event persistence under [[State Store]], event replay under [[Checkpoint Engine]], local in-memory task scheduling under [[Queue Broker]], a process-local [[Response Cache]], a deterministic provider, a sequential [[Worker]], explicit checkpoint recovery, and a FastAPI application. [[Queue Lifecycle Service]] connects queue transitions with the event store; the API composes those pieces into a synchronous local request flow. There is still no provider router or frontend application code.
 
 ## Intended Architecture
 
@@ -64,7 +65,7 @@ This diagram is architectural intent, not current runtime behavior. Today, [[DAG
 ## Module Responsibilities
 
 - [[04_APIs|API Layer]]: implemented in `backend/src/ather_os/api/app.py` with submission and status routes.
-- [[Response Cache]]: package exists at `backend/src/ather_os/cache`, but no interface or implementation exists.
+- [[Response Cache]]: `InMemoryResponseCache` and `CachedTaskProvider` reuse successful equivalent provider outputs during one app process. Cache contents are not persisted.
 - [[Checkpoint Engine]]: implemented with workflow/task status projection models and pure event replay logic.
 - [[Configuration]]: package exists at `backend/src/ather_os/config`, but no settings model or environment loading exists.
 - [[DAG Models]]: implemented in `backend/src/ather_os/dag/models.py`.
@@ -76,7 +77,7 @@ This diagram is architectural intent, not current runtime behavior. Today, [[DAG
 
 ## Data Flow
 
-Current data flow starts when the API receives a [[Workflow Model]]. [[Queue Lifecycle Service]] validates and submits it to [[Queue Broker]], appends lifecycle events to [[State Store]], and lets [[Worker]] claim and execute ready tasks with the deterministic provider. Stored events are replayed by [[Checkpoint Engine]] into workflow/task snapshots returned by the API.
+Current data flow starts when the API receives a [[Workflow Model]]. [[Queue Lifecycle Service]] validates and submits it to [[Queue Broker]], appends lifecycle events to [[State Store]], and lets [[Worker]] claim and execute ready tasks through the process-local [[Response Cache]] and deterministic provider. Stored events are replayed by [[Checkpoint Engine]] into workflow/task snapshots returned by the API.
 
 Planned data flow is documented as:
 

@@ -3,9 +3,10 @@ from uuid import UUID
 
 from fastapi import FastAPI, HTTPException, status
 
+from ather_os.cache import InMemoryResponseCache
 from ather_os.checkpoint import CheckpointReplayError, WorkflowSnapshot, WorkflowStatusQuery
 from ather_os.dag import DagValidationError, Workflow
-from ather_os.providers import MockProvider, TaskProvider
+from ather_os.providers import CachedTaskProvider, MockProvider, TaskProvider
 from ather_os.queue import InMemoryQueueBroker, QueueBrokerError, WorkflowQueueService
 from ather_os.state import SQLiteStateStore
 from ather_os.worker import WorkflowRecovery, WorkflowRecoveryError, WorkflowWorker
@@ -20,7 +21,8 @@ def create_app(
     state_store = SQLiteStateStore(database_path)
     queue_service = WorkflowQueueService(InMemoryQueueBroker(), state_store)
     status_query = WorkflowStatusQuery(state_store)
-    task_provider = provider or MockProvider()
+    response_cache = InMemoryResponseCache()
+    task_provider = CachedTaskProvider(provider or MockProvider(), response_cache)
     worker = WorkflowWorker(queue_service, task_provider, status_query)
     recovery = WorkflowRecovery(
         state_store, queue_service, task_provider, status_query
@@ -30,6 +32,7 @@ def create_app(
     app.state.state_store = state_store
     app.state.queue_service = queue_service
     app.state.status_query = status_query
+    app.state.response_cache = response_cache
     app.state.worker = worker
     app.state.recovery = recovery
 

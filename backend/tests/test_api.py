@@ -3,7 +3,7 @@ from uuid import UUID
 from fastapi.testclient import TestClient
 
 from ather_os.api import create_app
-from ather_os.dag import Workflow
+from ather_os.dag import Task, Workflow
 from ather_os.queue import InMemoryQueueBroker, WorkflowQueueService
 from ather_os.state import SQLiteStateStore
 
@@ -76,6 +76,18 @@ def test_submit_rejects_existing_workflow_id(tmp_path) -> None:
     assert response.status_code == 409
 
 
+def test_app_reuses_cached_provider_output_for_equivalent_tasks(tmp_path) -> None:
+    provider = RecordingProvider()
+    client = TestClient(create_app(tmp_path / "ather-os.sqlite3", provider))
+    payload = _workflow_payload()
+    payload["tasks"][1]["prompt"] = payload["tasks"][0]["prompt"]
+
+    response = client.post("/workflows", json=payload)
+
+    assert response.status_code == 201
+    assert provider.calls == 1
+
+
 def test_recover_workflow_restores_interrupted_execution(tmp_path) -> None:
     database_path = tmp_path / "ather-os.sqlite3"
     store = SQLiteStateStore(database_path)
@@ -112,3 +124,12 @@ def _workflow_payload() -> dict:
             },
         ],
     }
+
+
+class RecordingProvider:
+    def __init__(self) -> None:
+        self.calls = 0
+
+    def execute(self, task: Task) -> str:
+        self.calls += 1
+        return f"Provider output {self.calls}"

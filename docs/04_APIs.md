@@ -8,8 +8,9 @@ The local FastAPI application is implemented in
 ## Current State
 
 `create_app(database_path, provider)` wires a local SQLite [[State Store]],
-in-memory [[Queue Broker]], [[Queue Lifecycle Service]], deterministic mock
-provider, [[Worker]], and replay-backed [[Checkpoint Engine]] query.
+in-memory [[Queue Broker]], [[Queue Lifecycle Service]], process-local
+[[Response Cache]], deterministic mock provider, [[Worker]], and replay-backed
+[[Checkpoint Engine]] query.
 
 The module exports `app`, so it can be run from `backend/` with:
 
@@ -74,7 +75,9 @@ lookup, and duplicate workflow IDs.
 - Recovery is explicit; the app does not automatically resume unfinished
   workflows at startup.
 - The only provider is deterministic and local.
-- There is no authentication, cache, event-list endpoint, or API versioning.
+- There is no authentication, event-list endpoint, or API versioning.
+- Cache contents last only for the app process and are not shared with a new app
+  instance or restored during recovery.
 
 ## Related
 

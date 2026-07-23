@@ -97,6 +97,17 @@ the single-process engine does not yet need.
 
 Related: [[Checkpoint Engine]], [[Queue Lifecycle Service]], [[Worker]], [[04_APIs|APIs]]
 
+## Use Process-Local Response Caching
+
+`CachedTaskProvider` uses `InMemoryResponseCache` to cache only successful
+provider outputs by task type, prompt, context needs, and quality tier.
+
+Reason: this removes duplicate local provider calls without adding a database,
+expiry policy, or invalidation system before those needs exist. Cache contents
+are intentionally excluded from the event log and recovery contract.
+
+Related: [[Response Cache]], [[Worker]], [[Provider Router]]
+
 ## Keep Frontend Placeholder
 
 The frontend folder exists before UI implementation.

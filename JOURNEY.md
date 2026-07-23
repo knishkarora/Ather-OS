@@ -316,6 +316,45 @@ Define the recovery guarantee alongside the first lifecycle events. Naming the
 at-least-once behavior earlier would make later retry and idempotency decisions
 more deliberate.
 
+## Milestone: Thursday, 23 July 2026
+
+We completed the local response-caching slice around provider execution.
+
+What we completed:
+
+- added a minimal in-memory response cache with no new dependencies
+- wrapped providers so equivalent tasks reuse successful outputs in one app process
+- generated cache keys from task type, prompt, context needs, and quality tier
+- kept failed provider calls out of the cache
+- wired the cache into both normal worker execution and explicit recovery
+- verified the backend suite with 71 passing tests
+
+Why this mattered:
+
+The engine can now avoid repeating equivalent local provider work while keeping
+the event log and recovery model focused on durable workflow history.
+
+The main design decision:
+
+The cache is intentionally process-local. Persisting entries, adding expiry,
+or defining invalidation would add policy before Ather OS has a real remote
+provider or shared worker process.
+
+What I learned from this:
+
+A cache is safest when its boundary is explicit. Wrapping the provider keeps
+the worker unaware of hits and misses, while its key makes clear which inputs
+are expected to affect the output.
+
+What I would do differently next time:
+
+When a real provider is added, include provider identity and model settings in
+the key before considering any cache durable or shared.
+
+Supporting evidence:
+
+- `docs/journey-assets/2026-07-23-response-cache-tests.md`
+
 ## Future Journey Updates
 
 This file should stay readable. We will not update it after every tiny edit.

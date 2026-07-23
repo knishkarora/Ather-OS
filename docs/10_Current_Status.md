@@ -35,6 +35,7 @@ This is the audited state of the repository.
 - FastAPI application with synchronous `POST /workflows` execution and replay-backed `GET /workflows/{workflow_id}` status retrieval.
 - `WorkflowRecovery` rebuilds local queue state from persisted events and resumes unfinished workflows with at-least-once semantics for interrupted running tasks.
 - FastAPI `POST /workflows/{workflow_id}/recover` exposes explicit local recovery.
+- Process-local response cache wraps provider execution and reuses successful outputs for equivalent tasks.
 - Pytest coverage for API submission, validation, persisted status retrieval, missing workflows, and duplicate workflow IDs.
 - Pytest coverage for workflow submission events, task claim/completion events, dependency unblocking events, final workflow completion, invalid completion handling, dependency-ordered worker execution, provider failures, and recovery of queued/running/completed/terminal states.
 - Placeholder package boundaries for [[04_APIs|APIs]], [[Response Cache]], [[Configuration]], and [[Provider Router]].
@@ -55,7 +56,6 @@ This is the audited state of the repository.
 ## Missing
 
 - Database migrations.
-- Response cache.
 - Provider router.
 - Frontend app.
 - Authentication.
@@ -97,6 +97,7 @@ Running plain `pytest` from the shell failed because `pytest` is not on PATH.
 - The local queue keeps workflow scheduling state in memory only, while [[Queue Lifecycle Service]] appends related lifecycle events.
 - A task becomes queueable only after all dependency task IDs have completed.
 - The local worker executes one queued task at a time and treats a provider exception as a terminal workflow failure.
+- Cached provider outputs are keyed by task type, prompt, context needs, and quality tier; they are not persisted or replayed.
 - Recovery preserves completed tasks, requeues queued and interrupted running tasks, and increments the attempt for re-executed tasks. It is at-least-once and is not automatic at service startup.
 
 ## Related
