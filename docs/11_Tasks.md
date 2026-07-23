@@ -12,7 +12,6 @@ This task list is based on the audited current implementation.
 
 ## Backend Foundation Tasks
 
-- Add asynchronous execution and workflow event inspection routes.
 - Design automatic recovery only after task ownership, retry-budget, and timeout policies are explicit.
 - Define multi-provider routing policy and provider-aware cache keys only when a second provider is introduced.
 

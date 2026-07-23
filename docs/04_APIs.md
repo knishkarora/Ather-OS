@@ -25,10 +25,10 @@ The default local event database is `ather-os.sqlite3` in the working directory.
 ### `POST /workflows`
 
 Accepts a [[Workflow Model]], validates its graph, persists lifecycle events,
-executes it synchronously with the deterministic mock provider, and returns a
-`WorkflowSnapshot`.
+queues background execution with the deterministic mock provider, and returns
+the initial `WorkflowSnapshot`.
 
-- `201 Created`: workflow completed or failed during local execution.
+- `202 Accepted`: workflow was persisted and queued for local execution.
 - `409 Conflict`: the workflow ID already exists.
 - `422 Unprocessable Content`: Pydantic request validation or graph validation
   failed.
@@ -39,6 +39,14 @@ Loads events from the [[State Store]] and returns their replayed
 `WorkflowSnapshot`.
 
 - `200 OK`: persisted workflow found.
+- `404 Not Found`: no stored workflow exists for the ID.
+
+### `GET /workflows/{workflow_id}/events`
+
+Returns the workflow's typed lifecycle events in append order. This gives local
+clients an execution trace without duplicating checkpoint replay logic.
+
+- `200 OK`: persisted workflow events.
 - `404 Not Found`: no stored workflow exists for the ID.
 
 ### `POST /workflows/{workflow_id}/recover`
@@ -61,7 +69,7 @@ flowchart LR
     API --> Queue["Queue Broker"]
 ```
 
-This relationship is implemented for synchronous local execution.
+This relationship is implemented for local background execution.
 
 ## Tests
 
@@ -71,12 +79,12 @@ lookup, and duplicate workflow IDs.
 
 ## Current Limits
 
-- Execution is synchronous within the `POST` request.
+- Background execution is process-local; it stops if the app process stops.
 - Recovery is explicit; the app does not automatically resume unfinished
   workflows at startup.
 - The router selects one deterministic local provider for every task; there is
   no multi-provider policy.
-- There is no authentication, event-list endpoint, or API versioning.
+- There is no authentication or API versioning.
 - Cache contents last only for the app process and are not shared with a new app
   instance or restored during recovery.
 

@@ -14,18 +14,26 @@ TASK_B = "00000000-0000-0000-0000-000000000102"
 UNKNOWN_WORKFLOW_ID = UUID("00000000-0000-0000-0000-000000009999")
 
 
-def test_submit_workflow_executes_it_and_returns_completed_snapshot(tmp_path) -> None:
+def test_submit_workflow_queues_it_and_executes_in_the_background(tmp_path) -> None:
     client = TestClient(create_app(tmp_path / "ather-os.sqlite3"))
 
     response = client.post("/workflows", json=_workflow_payload())
 
-    assert response.status_code == 201
+    assert response.status_code == 202
     body = response.json()
     assert body["workflow_id"] == WORKFLOW_ID
-    assert body["status"] == "completed"
-    assert body["tasks"][TASK_A]["status"] == "completed"
-    assert body["tasks"][TASK_B]["status"] == "completed"
-    assert body["tasks"][TASK_B]["output"] == "Mock research output: Summarize findings"
+    assert body["status"] == "pending"
+    assert body["tasks"][TASK_A]["status"] == "queued"
+
+    status_response = client.get(f"/workflows/{WORKFLOW_ID}")
+
+    assert status_response.json()["status"] == "completed"
+    assert status_response.json()["tasks"][TASK_A]["status"] == "completed"
+    assert status_response.json()["tasks"][TASK_B]["status"] == "completed"
+    assert (
+        status_response.json()["tasks"][TASK_B]["output"]
+        == "Mock research output: Summarize findings"
+    )
 
 
 def test_get_workflow_replays_persisted_snapshot_across_app_instances(tmp_path) -> None:
@@ -84,7 +92,7 @@ def test_app_reuses_cached_provider_output_for_equivalent_tasks(tmp_path) -> Non
 
     response = client.post("/workflows", json=payload)
 
-    assert response.status_code == 201
+    assert response.status_code == 202
     assert provider.calls == 1
 
 
@@ -101,6 +109,33 @@ def test_recover_workflow_restores_interrupted_execution(tmp_path) -> None:
     assert response.status_code == 200
     assert response.json()["status"] == "completed"
     assert response.json()["tasks"][TASK_A]["attempt"] == 2
+
+
+def test_get_workflow_events_returns_append_ordered_lifecycle_events(tmp_path) -> None:
+    client = TestClient(create_app(tmp_path / "ather-os.sqlite3"))
+    client.post("/workflows", json=_workflow_payload())
+
+    response = client.get(f"/workflows/{WORKFLOW_ID}/events")
+
+    assert response.status_code == 200
+    assert [event["event_type"] for event in response.json()] == [
+        "workflow_submitted",
+        "task_queued",
+        "task_started",
+        "task_completed",
+        "task_queued",
+        "task_started",
+        "task_completed",
+        "workflow_completed",
+    ]
+
+
+def test_get_events_for_unknown_workflow_returns_not_found(tmp_path) -> None:
+    client = TestClient(create_app(tmp_path / "ather-os.sqlite3"))
+
+    response = client.get(f"/workflows/{UNKNOWN_WORKFLOW_ID}/events")
+
+    assert response.status_code == 404
 
 
 def _workflow_payload() -> dict:

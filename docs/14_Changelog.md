@@ -6,6 +6,12 @@ This changelog records repository state changes that are visible from the audite
 
 ## 2026-07-23
 
+- Changed `POST /workflows` to persist and queue workflows before executing the
+  existing worker as a FastAPI background task; it now returns `202 Accepted`
+  with the initial replayed snapshot.
+- Added `GET /workflows/{workflow_id}/events` for append-ordered lifecycle
+  event inspection and focused API coverage; the backend suite now has 75
+  passing tests.
 - Added `ProviderRouter`, `SingleProviderRouter`, and `RoutedTaskProvider` to
   separate provider selection from worker execution without changing local
   one-provider behavior; added focused router tests.

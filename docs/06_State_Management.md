@@ -15,9 +15,9 @@ The backend now has an append-only local [[State Store]] foundation:
 - [[Queue Lifecycle Service]] coordination between local queue transitions and lifecycle events.
 - Explicit [[Checkpoint Engine]]-backed worker recovery for interrupted local workflows.
 
-There is still no frontend state management, asynchronous worker loop, or
-automatic startup recovery. The API exposes synchronous status and explicit
-recovery routes.
+There is still no frontend state management or automatic startup recovery. The
+API queues process-local background execution and exposes status, event
+inspection, and explicit recovery routes.
 
 [[Workflow Model]] and [[Task Model]] instances are still validated in memory before state is persisted. Pydantic validates field shape, and [[DAG Validator]] validates dependency structure before future stateful execution systems rely on it.
 

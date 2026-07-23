@@ -32,14 +32,14 @@ This is the audited state of the repository.
 - `WorkflowStatusQuery` replays stored workflow events into the current workflow/task snapshot.
 - `TaskProvider` protocol and deterministic `MockProvider` implementation for local execution.
 - `WorkflowWorker` runs a workflow through the queue lifecycle service, records terminal failures, and records workflow completion after the final task.
-- FastAPI application with synchronous `POST /workflows` execution and replay-backed `GET /workflows/{workflow_id}` status retrieval.
+- FastAPI application with asynchronous `POST /workflows` submission, replay-backed `GET /workflows/{workflow_id}` status retrieval, and `GET /workflows/{workflow_id}/events` lifecycle inspection.
 - `WorkflowRecovery` rebuilds local queue state from persisted events and resumes unfinished workflows with at-least-once semantics for interrupted running tasks.
 - FastAPI `POST /workflows/{workflow_id}/recover` exposes explicit local recovery.
 - Process-local response cache wraps provider execution and reuses successful outputs for equivalent tasks.
 - `ProviderRouter`, `SingleProviderRouter`, and `RoutedTaskProvider` separate
   future provider selection from worker execution while preserving one local
   deterministic provider today.
-- Pytest coverage for API submission, validation, persisted status retrieval, missing workflows, and duplicate workflow IDs.
+- Pytest coverage for API submission, validation, persisted status retrieval, lifecycle-event inspection, missing workflows, and duplicate workflow IDs.
 - Pytest coverage for workflow submission events, task claim/completion events, dependency unblocking events, final workflow completion, invalid completion handling, dependency-ordered worker execution, provider failures, and recovery of queued/running/completed/terminal states.
 - Placeholder package boundary for [[Configuration]].
 - Placeholder [[Frontend]] README.
@@ -74,7 +74,7 @@ Command run from `backend/`:
 .\.venv\Scripts\pytest.exe
 ```
 
-Result: pytest started successfully using Python 3.12.13, collected 73 items, and all 73 tests passed.
+Result: pytest started successfully using Python 3.12.13, collected 75 items, and all 75 tests passed.
 
 Running plain `pytest` from the shell failed because `pytest` is not on PATH.
 

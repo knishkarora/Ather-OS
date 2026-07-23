@@ -72,7 +72,7 @@ exists for that attempt.
 
 - Replay is pure in-memory logic; it does not query [[State Store]] by itself.
 - Recovery is explicit through `POST /workflows/{workflow_id}/recover`; normal
-  submission remains synchronous.
+  submission is queued for process-local background execution.
 - Queue scheduling is restored only in the new local process; it is not a
   distributed lease or ownership mechanism.
 - There is no timeout, retry budget enforcement, or automatic startup recovery.

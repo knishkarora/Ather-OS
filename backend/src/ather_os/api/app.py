@@ -1,7 +1,7 @@
 from pathlib import Path
 from uuid import UUID
 
-from fastapi import FastAPI, HTTPException, status
+from fastapi import BackgroundTasks, FastAPI, HTTPException, status
 
 from ather_os.cache import InMemoryResponseCache
 from ather_os.checkpoint import CheckpointReplayError, WorkflowSnapshot, WorkflowStatusQuery
@@ -15,6 +15,7 @@ from ather_os.providers import (
 )
 from ather_os.queue import InMemoryQueueBroker, QueueBrokerError, WorkflowQueueService
 from ather_os.state import SQLiteStateStore
+from ather_os.state.events import WorkflowEvent
 from ather_os.worker import WorkflowRecovery, WorkflowRecoveryError, WorkflowWorker
 
 
@@ -47,10 +48,12 @@ def create_app(
     @app.post(
         "/workflows",
         response_model=WorkflowSnapshot,
-        status_code=status.HTTP_201_CREATED,
+        status_code=status.HTTP_202_ACCEPTED,
     )
-    def submit_workflow(workflow: Workflow) -> WorkflowSnapshot:
-        """Validate, execute, and return the current snapshot of a workflow."""
+    def submit_workflow(
+        workflow: Workflow, background_tasks: BackgroundTasks
+    ) -> WorkflowSnapshot:
+        """Validate and queue a workflow for local background execution."""
 
         if state_store.list_events(workflow.workflow_id):
             raise HTTPException(
@@ -71,7 +74,8 @@ def create_app(
                 detail=str(error),
             ) from error
 
-        return worker.run_workflow(workflow.workflow_id)
+        background_tasks.add_task(worker.run_workflow, workflow.workflow_id)
+        return status_query.get_workflow(workflow.workflow_id)
 
     @app.get("/workflows/{workflow_id}", response_model=WorkflowSnapshot)
     def get_workflow(workflow_id: UUID) -> WorkflowSnapshot:
@@ -84,6 +88,18 @@ def create_app(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail=f"Workflow {workflow_id} was not found.",
             ) from error
+
+    @app.get("/workflows/{workflow_id}/events", response_model=list[WorkflowEvent])
+    def get_workflow_events(workflow_id: UUID) -> list[WorkflowEvent]:
+        """Return append-ordered lifecycle events for one persisted workflow."""
+
+        events = state_store.list_events(workflow_id)
+        if not events:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail=f"Workflow {workflow_id} was not found.",
+            )
+        return events
 
     @app.post("/workflows/{workflow_id}/recover", response_model=WorkflowSnapshot)
     def recover_workflow(workflow_id: UUID) -> WorkflowSnapshot:

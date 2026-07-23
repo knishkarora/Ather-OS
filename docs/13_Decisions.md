@@ -97,6 +97,20 @@ the single-process engine does not yet need.
 
 Related: [[Checkpoint Engine]], [[Queue Lifecycle Service]], [[Worker]], [[04_APIs|APIs]]
 
+## Use FastAPI Background Tasks for Local Asynchronous Execution
+
+`POST /workflows` persists and queues a valid workflow, then schedules the
+existing local `WorkflowWorker` through FastAPI's native background-task
+mechanism. The route returns the initial snapshot with `202 Accepted`; clients
+can use status or event inspection to observe subsequent progress.
+
+Reason: this adds asynchronous API behavior without adding a queue service,
+thread manager, or dependency before the single-process Phase 0 engine needs
+them. The resulting work remains process-local and recoverable only through
+the existing explicit recovery route.
+
+Related: [[04_APIs|APIs]], [[Worker]], [[State Store]], [[Checkpoint Engine]]
+
 ## Use Process-Local Response Caching
 
 `CachedTaskProvider` uses `InMemoryResponseCache` to cache only successful

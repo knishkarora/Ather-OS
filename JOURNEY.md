@@ -395,6 +395,49 @@ Supporting evidence:
 
 - `docs/journey-assets/2026-07-23-provider-router-tests.md`
 
+## Milestone: Thursday, 23 July 2026
+
+We made the local HTTP execution path asynchronous and exposed its event trace.
+
+What we completed:
+
+- changed `POST /workflows` to persist and queue a workflow before returning
+  `202 Accepted`
+- used FastAPI's native background-task support to run the existing local
+  worker after the response is prepared
+- added `GET /workflows/{workflow_id}/events` for append-ordered lifecycle
+  inspection
+- added API tests for queued submission and event inspection
+- confirmed the backend suite passes with 75 tests
+
+Why this mattered:
+
+Submitting work no longer holds the HTTP request open for the entire local
+execution loop. The event route also makes the event-sourced behavior visible,
+which is useful for both future clients and debugging recovery behavior.
+
+The main design decision:
+
+We reused FastAPI's background-task mechanism instead of adding a thread pool,
+broker, or worker service. It is intentionally process-local, so explicit
+recovery remains necessary after an app restart.
+
+What I learned from this:
+
+Asynchronous submission is mostly about a clear lifecycle contract: persist
+first, return the initial snapshot, then let clients inspect the resulting
+status or event history.
+
+What I would do differently next time:
+
+Before adding more concurrency, define task ownership, timeout, and retry
+rules. A background task is enough for one local process, but it is not a
+distributed execution policy.
+
+Supporting evidence:
+
+- `docs/journey-assets/2026-07-23-async-api-tests.md`
+
 ## Future Journey Updates
 
 This file should stay readable. We will not update it after every tiny edit.

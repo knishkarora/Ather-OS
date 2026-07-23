@@ -22,14 +22,14 @@ Implemented:
 - Replay-backed workflow/task status queries.
 - Deterministic mock provider and in-process [[Worker]] execution with terminal failure recording.
 - Process-local [[Response Cache]] around provider execution.
+- Process-local asynchronous workflow execution and event inspection routes.
 - Placeholder [[Frontend]] folder.
 - Root project and journey documentation.
 
 ## Next Logical Work
 
-1. Add asynchronous execution and event inspection routes.
-2. Define automatic recovery, task ownership, and retry/timeout policy before running recovery at startup or across multiple workers.
-3. Add multi-provider routing policy and provider-aware cache keys only when a second provider is introduced.
+1. Define automatic recovery, task ownership, and retry/timeout policy before running recovery at startup or across multiple workers.
+2. Add multi-provider routing policy and provider-aware cache keys only when a second provider is introduced.
 
 ## Phase 0 Vision
 

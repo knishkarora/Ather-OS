@@ -40,7 +40,7 @@ flowchart TD
     Checkpoint --> Replay["replay.py"]
 ```
 
-The active code paths include [[DAG Models]], structural validation under [[DAG Validator]], append-only event persistence under [[State Store]], event replay under [[Checkpoint Engine]], local in-memory task scheduling under [[Queue Broker]], a process-local [[Response Cache]], a single-provider [[Provider Router]], a deterministic provider, a sequential [[Worker]], explicit checkpoint recovery, and a FastAPI application. [[Queue Lifecycle Service]] connects queue transitions with the event store; the API composes those pieces into a synchronous local request flow. There is still no multi-provider routing policy or frontend application code.
+The active code paths include [[DAG Models]], structural validation under [[DAG Validator]], append-only event persistence under [[State Store]], event replay under [[Checkpoint Engine]], local in-memory task scheduling under [[Queue Broker]], a process-local [[Response Cache]], a single-provider [[Provider Router]], a deterministic provider, a sequential [[Worker]], explicit checkpoint recovery, and a FastAPI application. [[Queue Lifecycle Service]] connects queue transitions with the event store; the API persists a workflow before delegating local execution to a FastAPI background task. There is still no multi-provider routing policy or frontend application code.
 
 ## Intended Architecture
 
@@ -78,7 +78,7 @@ This diagram is architectural intent, not current runtime behavior. Today, [[DAG
 
 ## Data Flow
 
-Current data flow starts when the API receives a [[Workflow Model]]. [[Queue Lifecycle Service]] validates and submits it to [[Queue Broker]], appends lifecycle events to [[State Store]], and lets [[Worker]] claim and execute ready tasks through the process-local [[Response Cache]], [[Provider Router]], and deterministic provider. Stored events are replayed by [[Checkpoint Engine]] into workflow/task snapshots returned by the API.
+Current data flow starts when the API receives a [[Workflow Model]]. [[Queue Lifecycle Service]] validates and submits it to [[Queue Broker]], appends lifecycle events to [[State Store]], and returns its initial snapshot. A FastAPI background task lets [[Worker]] claim and execute ready tasks through the process-local [[Response Cache]], [[Provider Router]], and deterministic provider. Stored events are replayed by [[Checkpoint Engine]] into workflow/task snapshots, while the event-inspection route exposes the raw trace.
 
 Planned data flow is documented as:
 

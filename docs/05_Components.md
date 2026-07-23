@@ -169,9 +169,10 @@ at-least-once execution and therefore re-runs it with an incremented attempt.
 Implemented in `backend/src/ather_os/api/app.py`.
 
 `create_app` composes SQLite storage, the in-memory queue, lifecycle service,
-mock provider, worker, and status query. The synchronous `POST /workflows` and
-`GET /workflows/{workflow_id}` routes make the local execution path available
-over HTTP.
+mock provider, worker, and status query. `POST /workflows` persists and queues
+work before a FastAPI background task runs the worker; `GET /workflows/{workflow_id}`
+returns its replayed status, and `GET /workflows/{workflow_id}/events` returns
+the append-ordered lifecycle trace.
 
 ### Response Cache
 

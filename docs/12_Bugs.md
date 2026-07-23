@@ -8,13 +8,15 @@ This file tracks known bugs, mismatches, and risks in the current repository.
 
 `AtherOS_Project_Master_Document.md` says Stage 0 is built and lists several implemented features. The actual codebase implements the DAG foundation, sample validation, local [[State Store]], checkpoint replay, explicit local recovery, a deterministic mock provider, a sequential in-process worker, and a small local API, but not the full engine.
 
-Impact: future contributors or AI agents may assume cache, provider routing, asynchronous APIs, or full restart recovery code exists.
+Impact: future contributors or AI agents may assume full restart recovery or
+multi-worker behavior exists beyond the local cache, provider-routing, and
+asynchronous API slices that are now implemented.
 
 Related: [[10_Current_Status|Current Status]], [[09_Roadmap|Roadmap]]
 
 ## Limited Tests
 
-`backend/pyproject.toml` configures pytest, and the DAG, state-store, checkpoint replay, queue, mock provider, local worker, explicit recovery, and synchronous API have focused tests. Cache, provider routing, retry, asynchronous API, and automatic/concurrent recovery coverage is still missing.
+`backend/pyproject.toml` configures pytest, and the DAG, state-store, checkpoint replay, queue, mock provider, local worker, explicit recovery, cache, provider routing, and asynchronous API have focused tests. Retry and automatic/concurrent recovery coverage are still missing.
 
 Impact: DAG schema, graph validation, state event persistence, replay behavior, and basic local execution are protected, but future service and recovery behavior is not covered yet.
 
