@@ -276,6 +276,46 @@ The next checkpoint is worker recovery from persisted events. That will define
 what happens to tasks interrupted between `task_started` and a terminal event;
 afterward, caching and provider routing can build on a clearer execution model.
 
+## Milestone: Thursday, 23 July 2026
+
+We completed the local checkpoint-recovery slice.
+
+What we completed:
+
+- rebuilt the volatile queue from persisted workflow events
+- preserved already completed task outputs after a restart
+- requeued tasks that were queued or running when execution stopped
+- incremented the recorded attempt when an interrupted task ran again
+- finalized workflows whose last task result was saved before the terminal workflow event
+- exposed recovery through `POST /workflows/{workflow_id}/recover`
+- verified the backend suite with 67 passing tests
+
+Why this mattered:
+
+The event log is now useful after a process boundary, not merely for viewing a
+finished workflow. The local engine can resume an interrupted DAG without
+forgetting completed dependency work.
+
+The main design decision:
+
+Recovery is explicit and at-least-once. A persisted `task_started` event cannot
+prove whether provider execution completed immediately before a crash, so the
+smallest truthful behavior is to run that task again and record the next
+attempt. Automatic startup recovery, leases, and idempotency keys are deferred
+until the project needs more than one local worker.
+
+What I learned from this:
+
+Event replay is only half of recovery. The other half is rebuilding the
+transient scheduler state from the projection while preserving a clear delivery
+guarantee.
+
+What I would do differently next time:
+
+Define the recovery guarantee alongside the first lifecycle events. Naming the
+at-least-once behavior earlier would make later retry and idempotency decisions
+more deliberate.
+
 ## Future Journey Updates
 
 This file should stay readable. We will not update it after every tiny edit.

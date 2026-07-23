@@ -13,8 +13,11 @@ The backend now has an append-only local [[State Store]] foundation:
 - A SQLite-backed implementation in `backend/src/ather_os/state/sqlite.py`.
 - [[Checkpoint Engine]] projection models and event replay in `backend/src/ather_os/checkpoint`.
 - [[Queue Lifecycle Service]] coordination between local queue transitions and lifecycle events.
+- Explicit [[Checkpoint Engine]]-backed worker recovery for interrupted local workflows.
 
-There is still no frontend state management, worker loop, queue recovery, or API state endpoint.
+There is still no frontend state management, asynchronous worker loop, or
+automatic startup recovery. The API exposes synchronous status and explicit
+recovery routes.
 
 [[Workflow Model]] and [[Task Model]] instances are still validated in memory before state is persisted. Pydantic validates field shape, and [[DAG Validator]] validates dependency structure before future stateful execution systems rely on it.
 
@@ -35,14 +38,14 @@ The project vision describes append-only task events and replay:
 
 ```mermaid
 flowchart LR
-    Worker["Future Worker"] --> Lifecycle["Queue Lifecycle Service"]
+    Worker["Worker / Recovery"] --> Lifecycle["Queue Lifecycle Service"]
     Lifecycle --> Queue["Queue Broker"]
     Lifecycle --> StateStore["State Store"]
     StateStore --> Replay["Checkpoint Replay"]
     Replay --> WorkflowState["Reconstructed Workflow State"]
 ```
 
-The append-event and list-events portions are implemented in [[State Store]]. In-memory replay is implemented in [[Checkpoint Engine]]. [[Queue Lifecycle Service]] now emits submission, queue, start, and successful completion events while delegating readiness decisions to [[Queue Broker]].
+The append-event and list-events portions are implemented in [[State Store]]. In-memory replay is implemented in [[Checkpoint Engine]]. [[Queue Lifecycle Service]] emits submission, queue, start, and successful completion events while delegating readiness decisions to [[Queue Broker]]. On recovery, the replayed snapshot restores completed and ready work; an interrupted running task is requeued at the next attempt.
 
 ## Frontend State
 
@@ -56,13 +59,12 @@ Not applicable. The [[Frontend]] has no application code or state library.
 - [[State Store]] persists workflow and task lifecycle events.
 - [[Checkpoint Engine]] reconstructs current workflow/task status from persisted events.
 - [[Queue Broker]] determines which [[Task Model]] instances are executable based on completed dependencies.
-- [[Queue Lifecycle Service]] coordinates the local queue with append-only events, without claiming durable queue recovery yet.
+- [[Queue Lifecycle Service]] coordinates the local queue with append-only events; [[Worker]] recovery rebuilds that local queue from persisted state when invoked.
 
 ## Missing State Work
 
-- Add workflow status query.
-- Add task status query.
-- Add tests for future recovery behavior.
+- Add automatic recovery on service startup once ownership and concurrency rules exist.
+- Add retry-budget enforcement, task leases, and timeout handling.
 
 ## Related
 

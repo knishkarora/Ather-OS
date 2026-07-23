@@ -12,13 +12,13 @@ This task list is based on the audited current implementation.
 
 ## Immediate Engineering Tasks
 
-- Design worker checkpoint recovery from persisted event history.
 - Add response caching around provider execution.
 
 ## Backend Foundation Tasks
 
 - Define [[Provider Router]] interface.
 - Add asynchronous execution and workflow event inspection routes.
+- Design automatic recovery only after task ownership, retry-budget, and timeout policies are explicit.
 
 ## Frontend Tasks
 

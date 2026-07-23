@@ -42,6 +42,7 @@ backend/
 |   |   |-- checkpoint/
 |   |   |   |-- __init__.py
 |   |   |   |-- models.py
+|   |   |   |-- query.py
 |   |   |   `-- replay.py
 |   |   |-- config/
 |   |   |-- dag/
@@ -61,6 +62,9 @@ backend/
 |   |   |   |-- sqlite.py
 |   |   |   `-- store.py
 |   |   `-- worker/
+|   |       |-- __init__.py
+|   |       |-- loop.py
+|   |       `-- recovery.py
 |   `-- ather_os_backend.egg-info/
 `-- tests/
     |-- __init__.py
@@ -88,7 +92,7 @@ backend/
 
 `backend/samples/` contains one valid workflow JSON file and two intentionally invalid workflow JSON files used by tests and manual validation.
 
-`backend/tests/` contains focused tests for DAG models, DAG validators, the sample workflow validation command, state events, the SQLite state store, checkpoint replay, in-memory queue scheduling, and queue lifecycle event coordination.
+`backend/tests/` contains focused tests for DAG models, DAG validators, the sample workflow validation command, state events, the SQLite state store, checkpoint replay, in-memory queue scheduling, queue lifecycle coordination, worker execution, recovery, and the API.
 
 ## Frontend
 
@@ -111,7 +115,7 @@ The `docs/` folder is this Obsidian knowledge base. It is the single source of t
 - [[State Store]] has lifecycle event models, a storage protocol, and a SQLite implementation.
 - [[Checkpoint Engine]] has status projection models and event replay logic.
 - [[Queue Broker]] has a scheduling protocol, dependency-aware in-memory implementation, and event-coordinating [[Queue Lifecycle Service]].
-- [[Response Cache]], [[Provider Router]], and [[Worker]] are named backend package boundaries with no implementation.
+- [[Response Cache]] and [[Provider Router]] are named backend package boundaries with no implementation. [[Worker]] has local execution and explicit recovery implementations.
 
 ## Related
 

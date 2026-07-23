@@ -129,7 +129,7 @@ Implemented in `backend/src/ather_os/checkpoint/`.
 
 The replay function reconstructs current workflow/task state from append-ordered [[State Store]] events. It starts from `workflow_submitted`, creates pending task snapshots, then applies task and workflow lifecycle events in order.
 
-The checkpoint engine does not query the database by itself, schedule tasks, or restart workers. `WorkflowStatusQuery` supplies events from a [[State Store]] before calling replay; the API uses that query to expose workflow status.
+The checkpoint engine does not query the database by itself or schedule tasks. `WorkflowStatusQuery` supplies events from a [[State Store]] before calling replay; `WorkflowRecovery` uses that query and the stored submission definition to restore queue state after interruption.
 
 ### Queue Broker
 
@@ -143,7 +143,7 @@ Implemented in `backend/src/ather_os/queue/`.
 
 The in-memory queue validates workflows with [[DAG Validator]], queues the root task on submission, returns ready tasks through `claim_next_task`, and queues dependent tasks only after all dependency task IDs have completed. [[Queue Lifecycle Service]] composes the broker with [[State Store]] so submission, queueing, task starts, completion, and terminal failure are recorded as lifecycle events.
 
-The broker does not persist queue state, execute tasks, or retry failures. The lifecycle service records workflow completion after the final task and records terminal workflow failure, while [[Worker]] owns task execution. Queue recovery remains future work.
+The broker does not persist queue state, execute tasks, or retry failures. The lifecycle service records workflow completion after the final task and records terminal workflow failure, while [[Worker]] owns task execution. `WorkflowRecovery` rebuilds the volatile queue from persisted events on demand.
 
 ### Provider and Worker
 
@@ -154,6 +154,10 @@ output and can be configured to fail specific task IDs for testing.
 `WorkflowWorker` repeatedly claims ready tasks, executes them through a provider,
 records outputs or terminal failures through [[Queue Lifecycle Service]], and
 returns the replayed workflow snapshot.
+
+`WorkflowRecovery` rebuilds a local queue for an unfinished workflow from its
+persisted event stream. It treats a running task at interruption as an
+at-least-once execution and therefore re-runs it with an incremented attempt.
 
 ### API Layer
 
@@ -199,6 +203,8 @@ flowchart TD
     Queue --> Task
     QueueLifecycle["Queue Lifecycle Service"] --> Queue
     QueueLifecycle --> StateStore
+    Recovery["Workflow Recovery"] --> Checkpoint
+    Recovery --> QueueLifecycle
 ```
 
 ## Related

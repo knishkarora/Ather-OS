@@ -54,12 +54,28 @@ Each task snapshot stores the task ID, current status, latest attempt number, op
 
 Replay raises `CheckpointReplayError` for empty event lists, event logs that do not start with `workflow_submitted`, mixed workflow IDs, or task events for unknown task IDs.
 
+## Recovery
+
+`WorkflowRecovery` in `backend/src/ather_os/worker/recovery.py` uses the replayed
+snapshot plus the persisted `workflow_submitted` definition to rebuild the
+in-memory queue after a process restart. It preserves completed task outputs,
+requeues tasks that were queued or running at interruption, and resumes them
+with an incremented attempt number. If every task was already completed, it
+appends the missing `workflow_completed` event; if a task had failed before the
+terminal workflow event was written, it appends `workflow_failed` instead.
+
+Recovery is deliberately at-least-once: a task that was `running` when the
+process stopped can be executed again because no durable completion event
+exists for that attempt.
+
 ## Current Limits
 
 - Replay is pure in-memory logic; it does not query [[State Store]] by itself.
-- There is no API endpoint for workflow or task status yet.
-- Queue scheduling exists in [[Queue Broker]], but replay is not integrated with it yet.
-- There is no worker recovery loop yet.
+- Recovery is explicit through `POST /workflows/{workflow_id}/recover`; normal
+  submission remains synchronous.
+- Queue scheduling is restored only in the new local process; it is not a
+  distributed lease or ownership mechanism.
+- There is no timeout, retry budget enforcement, or automatic startup recovery.
 
 ## Related
 

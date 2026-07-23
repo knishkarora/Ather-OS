@@ -84,6 +84,19 @@ Reason: keeping replay pure makes it easy to test and keeps storage concerns sep
 
 Related: [[Checkpoint Engine]], [[State Store]], [[06_State_Management|State Management]]
 
+## Use Explicit At-Least-Once Local Recovery
+
+`WorkflowRecovery` reconstructs a fresh in-memory queue from the persisted event
+stream only when `POST /workflows/{workflow_id}/recover` is called. A task that
+was running when the process stopped is requeued and receives the next attempt number.
+
+Reason: a `task_started` event cannot prove the provider did not finish before
+the interruption. Re-executing is the smallest honest Phase 0 guarantee;
+leases, idempotency keys, and automatic startup recovery would add policy that
+the single-process engine does not yet need.
+
+Related: [[Checkpoint Engine]], [[Queue Lifecycle Service]], [[Worker]], [[04_APIs|APIs]]
+
 ## Keep Frontend Placeholder
 
 The frontend folder exists before UI implementation.

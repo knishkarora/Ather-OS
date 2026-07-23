@@ -18,6 +18,7 @@ The queue package now contains:
 - `submit_workflow(workflow: Workflow) -> list[Task]`
 - `mark_task_completed(workflow_id: UUID, task_id: UUID) -> list[Task]`
 - `claim_next_task(workflow_id: UUID) -> Task | None`
+- `restore_workflow(workflow, completed_task_ids, queued_task_ids) -> list[Task]`
 
 The contract stays intentionally small. It does not persist state, execute tasks, retry failures, or mark workflows complete.
 
@@ -39,8 +40,7 @@ Scheduling rules:
 
 ## Current Limits
 
-- Queue state is in-memory only and disappears when the process exits.
-- There is no [[Worker]] loop to claim and execute tasks yet.
+- Queue state is in-memory only and disappears when the process exits; [[Worker]] recovery rebuilds it from persisted lifecycle events on demand.
 - There is no retry, lease, timeout, priority, or concurrency policy yet.
 
 ## Related

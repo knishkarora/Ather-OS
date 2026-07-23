@@ -26,10 +26,10 @@ Implemented:
 
 ## Next Logical Work
 
-1. Add worker checkpoint recovery from persisted events.
-2. Add a response cache around provider execution.
-3. Define a provider router once more than the deterministic mock provider is needed.
-4. Add asynchronous execution and event inspection routes once the local recovery contract is defined.
+1. Add a response cache around provider execution.
+2. Define a provider router once more than the deterministic mock provider is needed.
+3. Add asynchronous execution and event inspection routes.
+4. Define automatic recovery, task ownership, and retry/timeout policy before running recovery at startup or across multiple workers.
 
 ## Phase 0 Vision
 
@@ -37,13 +37,13 @@ The project documents describe Phase 0 as a local backend engine with:
 
 - Validated workflow DAGs. Schema validation, structural validation, sample JSON files, and a local validation command are now implemented; execution is not.
 - Event-sourced state. The local append-only [[State Store]] now exists.
-- Checkpoint recovery. In-memory replay and status projections now exist; worker restart behavior does not.
+- Checkpoint recovery. In-memory replay, status projections, and explicit local worker recovery now exist; automatic startup recovery does not.
 - Response caching.
 - Mock provider execution. A deterministic implementation now exists.
 - In-process worker. A sequential local implementation now exists; restart recovery does not.
 - Small API for running and inspecting workflows.
 
-The schema, graph validation, local event storage, checkpoint replay, local provider, and worker execution parts currently exist.
+The schema, graph validation, local event storage, checkpoint replay, explicit recovery, local provider, and worker execution parts currently exist.
 
 ## Later Vision
 

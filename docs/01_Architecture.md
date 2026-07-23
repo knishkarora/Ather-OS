@@ -28,6 +28,7 @@ flowchart TD
     Queue --> Lifecycle["lifecycle.py"]
     API --> Lifecycle
     API --> Worker
+    API --> Recovery["worker/recovery.py"]
     Worker --> Provider
     Lifecycle --> State
     State --> Events["events.py"]
@@ -37,7 +38,7 @@ flowchart TD
     Checkpoint --> Replay["replay.py"]
 ```
 
-The active code paths include [[DAG Models]], structural validation under [[DAG Validator]], append-only event persistence under [[State Store]], event replay under [[Checkpoint Engine]], local in-memory task scheduling under [[Queue Broker]], a deterministic provider, a sequential [[Worker]], and a FastAPI application. [[Queue Lifecycle Service]] connects queue transitions with the event store; the API composes those pieces into a synchronous local request flow. There is still no provider router or frontend application code.
+The active code paths include [[DAG Models]], structural validation under [[DAG Validator]], append-only event persistence under [[State Store]], event replay under [[Checkpoint Engine]], local in-memory task scheduling under [[Queue Broker]], a deterministic provider, a sequential [[Worker]], explicit checkpoint recovery, and a FastAPI application. [[Queue Lifecycle Service]] connects queue transitions with the event store; the API composes those pieces into a synchronous local request flow. There is still no provider router or frontend application code.
 
 ## Intended Architecture
 
@@ -71,7 +72,7 @@ This diagram is architectural intent, not current runtime behavior. Today, [[DAG
 - [[Provider Router]]: `TaskProvider` protocol and deterministic `MockProvider` are implemented; routing is not.
 - [[Queue Broker]]: implemented with a minimal protocol, dependency-aware in-memory queue, and [[Queue Lifecycle Service]] for local event emission.
 - [[State Store]]: implemented with lifecycle event models, a minimal storage protocol, and a local SQLite event store.
-- [[Worker]]: `WorkflowWorker` executes queued tasks sequentially through a provider.
+- [[Worker]]: `WorkflowWorker` executes queued tasks sequentially through a provider; `WorkflowRecovery` reconstructs an unfinished workflow's queue from persisted events when explicitly requested.
 
 ## Data Flow
 
@@ -85,7 +86,7 @@ Planned data flow is documented as:
 4. [[Queue Broker]] schedules executable tasks.
 5. [[Worker]] executes tasks through [[Provider Router]].
 6. [[State Store]] appends task events. This append-only portion now exists locally through SQLite.
-7. [[Checkpoint Engine]] replays events into workflow/task snapshots. This in-memory replay portion now exists; worker restart behavior does not.
+7. [[Checkpoint Engine]] replays events into workflow/task snapshots. `WorkflowRecovery` uses those snapshots to resume local interrupted workflows on demand.
 
 ## Dependencies
 

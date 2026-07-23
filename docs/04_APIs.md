@@ -40,6 +40,17 @@ Loads events from the [[State Store]] and returns their replayed
 - `200 OK`: persisted workflow found.
 - `404 Not Found`: no stored workflow exists for the ID.
 
+### `POST /workflows/{workflow_id}/recover`
+
+Replays persisted events, reconstructs the in-memory queue, and resumes an
+unfinished local workflow. A task interrupted after `task_started` may run
+again with the next attempt number.
+
+- `200 OK`: returns the resulting replayed snapshot.
+- `404 Not Found`: no stored workflow exists for the ID.
+- `422 Unprocessable Content`: the persisted submission event cannot provide a
+  workflow definition needed for recovery.
+
 ## Intended Dependencies
 
 ```mermaid
@@ -60,7 +71,8 @@ lookup, and duplicate workflow IDs.
 ## Current Limits
 
 - Execution is synchronous within the `POST` request.
-- The queue is in-memory and does not recover claimed tasks after a restart.
+- Recovery is explicit; the app does not automatically resume unfinished
+  workflows at startup.
 - The only provider is deterministic and local.
 - There is no authentication, cache, event-list endpoint, or API versioning.
 

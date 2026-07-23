@@ -4,6 +4,13 @@
 
 This changelog records repository state changes that are visible from the audited files.
 
+## 2026-07-23
+
+- Added `WorkflowRecovery` to rebuild an in-memory workflow queue from persisted lifecycle events and resume unfinished local workflows.
+- Requeues interrupted running tasks with incremented attempts, preserves completed outputs, and writes missing terminal workflow events after interrupted finalization.
+- Added `POST /workflows/{workflow_id}/recover` and focused API/recovery tests.
+- Updated the knowledge base and journey documentation for the completed recovery slice.
+
 ## 2026-07-21
 
 - Added the FastAPI application in `backend/src/ather_os/api/app.py` with synchronous workflow submission and persisted replay-backed status routes.

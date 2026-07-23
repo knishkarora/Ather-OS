@@ -33,8 +33,10 @@ This is the audited state of the repository.
 - `TaskProvider` protocol and deterministic `MockProvider` implementation for local execution.
 - `WorkflowWorker` runs a workflow through the queue lifecycle service, records terminal failures, and records workflow completion after the final task.
 - FastAPI application with synchronous `POST /workflows` execution and replay-backed `GET /workflows/{workflow_id}` status retrieval.
+- `WorkflowRecovery` rebuilds local queue state from persisted events and resumes unfinished workflows with at-least-once semantics for interrupted running tasks.
+- FastAPI `POST /workflows/{workflow_id}/recover` exposes explicit local recovery.
 - Pytest coverage for API submission, validation, persisted status retrieval, missing workflows, and duplicate workflow IDs.
-- Pytest coverage for workflow submission events, task claim/completion events, dependency unblocking events, final workflow completion, invalid completion handling, dependency-ordered worker execution, and provider failures.
+- Pytest coverage for workflow submission events, task claim/completion events, dependency unblocking events, final workflow completion, invalid completion handling, dependency-ordered worker execution, provider failures, and recovery of queued/running/completed/terminal states.
 - Placeholder package boundaries for [[04_APIs|APIs]], [[Response Cache]], [[Configuration]], and [[Provider Router]].
 - Placeholder [[Frontend]] README.
 - `.gitignore` for Python, local databases, env files, frontend build outputs, and editor metadata.
@@ -46,14 +48,13 @@ This is the audited state of the repository.
 - [[DAG Validator]] validates duplicate task IDs, unknown dependencies, self-dependencies, cycles, multiple roots, and disconnected roots.
 - The validation command loads local workflow JSON and validates it, but does not execute or persist workflows.
 - [[State Store]] can append and list events, [[Checkpoint Engine]] can replay listed events into workflow/task status snapshots, and `WorkflowStatusQuery` exposes that replay against a state store.
-- The in-process [[Worker]] executes ready tasks sequentially with the deterministic mock provider and uses [[Queue Lifecycle Service]] to persist queue-driven lifecycle events.
+- The in-process [[Worker]] executes ready tasks sequentially with the deterministic mock provider and uses [[Queue Lifecycle Service]] to persist queue-driven lifecycle events. `WorkflowRecovery` can reconstruct that in-memory queue from persisted events when explicitly invoked.
 - Test configuration exists in `pyproject.toml`, and focused DAG model, validator, and validation command tests now exist.
 - A local virtual environment exists and contains installed dependencies, but the global shell PATH does not expose `pytest`.
 
 ## Missing
 
 - Database migrations.
-- Worker checkpoint recovery loop.
 - Response cache.
 - Provider router.
 - Frontend app.
@@ -77,7 +78,7 @@ Running plain `pytest` from the shell failed because `pytest` is not on PATH.
 
 ## Known Mismatch
 
-`AtherOS_Project_Master_Document.md` states that Stage 0 features are built, including storage, event sourcing, checkpoint recovery, cache, mock provider, worker, and REST API. The audited source code now includes local storage, event sourcing, in-memory checkpoint replay, in-memory queue scheduling, a deterministic mock provider, a local worker, and a small REST API. Cache, restart recovery, and provider routing are still missing. Treat those remaining Stage 0 claims as aspirational or stale until code is added.
+`AtherOS_Project_Master_Document.md` states that Stage 0 features are built, including storage, event sourcing, checkpoint recovery, cache, mock provider, worker, and REST API. The audited source code now includes local storage, event sourcing, checkpoint replay, explicit local recovery, in-memory queue scheduling, a deterministic mock provider, a local worker, and a small REST API. Cache and provider routing are still missing; automatic restart recovery is not implemented. Treat those remaining Stage 0 claims as aspirational or stale until code is added.
 
 ## Current Assumptions in Code
 
@@ -96,6 +97,7 @@ Running plain `pytest` from the shell failed because `pytest` is not on PATH.
 - The local queue keeps workflow scheduling state in memory only, while [[Queue Lifecycle Service]] appends related lifecycle events.
 - A task becomes queueable only after all dependency task IDs have completed.
 - The local worker executes one queued task at a time and treats a provider exception as a terminal workflow failure.
+- Recovery preserves completed tasks, requeues queued and interrupted running tasks, and increments the attempt for re-executed tasks. It is at-least-once and is not automatic at service startup.
 
 ## Related
 

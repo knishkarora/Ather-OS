@@ -43,7 +43,7 @@ The SQLite table is `workflow_events` and stores:
 - occurrence timestamp
 - full JSON event payload
 
-The current event names are simpler than the early vision language: `task_queued`, `task_started`, `task_completed`, and `task_failed`.
+The current event names are simpler than the early vision language: `task_queued`, `task_started`, `task_completed`, and `task_failed`. The `workflow_submitted` payload includes the validated workflow definition so [[Checkpoint Engine]] recovery can reconstruct the local queue after process interruption.
 
 [[Checkpoint Engine]] replay and in-memory workflow/task status projections now exist. Response cache records and persisted projection tables are still planned.
 
@@ -69,7 +69,7 @@ This diagram represents the Pydantic containment relationship only:
 
 - Add persisted workflow/task status projection tables if in-memory replay becomes too expensive.
 - Add event idempotency policy beyond unique event IDs.
-- Add tests for idempotent recovery.
+- Define an idempotency policy before automatic or concurrent recovery is introduced.
 
 ## Related
 
