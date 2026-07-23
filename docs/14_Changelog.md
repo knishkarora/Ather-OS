@@ -6,6 +6,9 @@ This changelog records repository state changes that are visible from the audite
 
 ## 2026-07-23
 
+- Added `ProviderRouter`, `SingleProviderRouter`, and `RoutedTaskProvider` to
+  separate provider selection from worker execution without changing local
+  one-provider behavior; added focused router tests.
 - Added a process-local `InMemoryResponseCache` and `CachedTaskProvider` around provider execution.
 - Cache keys cover output-affecting task fields, successful outputs are reused across equivalent tasks, and provider failures are not cached.
 - Added cache unit tests and API wiring coverage; the backend suite now has 71 passing tests.

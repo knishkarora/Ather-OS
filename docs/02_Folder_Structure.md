@@ -115,7 +115,7 @@ The `docs/` folder is this Obsidian knowledge base. It is the single source of t
 - [[State Store]] has lifecycle event models, a storage protocol, and a SQLite implementation.
 - [[Checkpoint Engine]] has status projection models and event replay logic.
 - [[Queue Broker]] has a scheduling protocol, dependency-aware in-memory implementation, and event-coordinating [[Queue Lifecycle Service]].
-- [[Response Cache]] and [[Provider Router]] are named backend package boundaries with no implementation. [[Worker]] has local execution and explicit recovery implementations.
+- [[Response Cache]] and [[Provider Router]] have local implementations. [[Worker]] has local execution and explicit recovery implementations.
 
 ## Related
 

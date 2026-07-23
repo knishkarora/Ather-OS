@@ -18,7 +18,8 @@ The repository is currently in an early Phase 0 foundation state. The implemente
 - [[Checkpoint Engine]] has workflow/task status projection models and event replay.
 - [[Queue Broker]] has a minimal scheduling protocol and dependency-aware in-memory implementation.
 - [[Queue Lifecycle Service]] records local submission, queue, start, and successful completion events around queue operations.
-- [[04_APIs|APIs]], [[Provider Router]], [[Worker]], and [[Response Cache]] have package folders or documented intent, but no executable implementation yet.
+- [[Configuration]] has only a package boundary; the API, provider router, worker,
+  and response cache have executable local implementations.
 - [[07_Authentication|Authentication]] is not implemented and is not referenced by code.
 
 ## Product Intent

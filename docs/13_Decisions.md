@@ -108,6 +108,18 @@ are intentionally excluded from the event log and recovery contract.
 
 Related: [[Response Cache]], [[Worker]], [[Provider Router]]
 
+## Separate Provider Selection from Execution
+
+`ProviderRouter` selects a `TaskProvider` for a task, while
+`RoutedTaskProvider` keeps the worker on its existing `execute(task)` contract.
+Phase 0 uses `SingleProviderRouter`, which returns the one configured provider
+for every task.
+
+Reason: this gives a future routing policy one replacement point without adding
+registry configuration or changing the worker before a second provider exists.
+
+Related: [[Provider Router]], [[Response Cache]], [[Worker]]
+
 ## Keep Frontend Placeholder
 
 The frontend folder exists before UI implementation.

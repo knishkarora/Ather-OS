@@ -36,9 +36,12 @@ This is the audited state of the repository.
 - `WorkflowRecovery` rebuilds local queue state from persisted events and resumes unfinished workflows with at-least-once semantics for interrupted running tasks.
 - FastAPI `POST /workflows/{workflow_id}/recover` exposes explicit local recovery.
 - Process-local response cache wraps provider execution and reuses successful outputs for equivalent tasks.
+- `ProviderRouter`, `SingleProviderRouter`, and `RoutedTaskProvider` separate
+  future provider selection from worker execution while preserving one local
+  deterministic provider today.
 - Pytest coverage for API submission, validation, persisted status retrieval, missing workflows, and duplicate workflow IDs.
 - Pytest coverage for workflow submission events, task claim/completion events, dependency unblocking events, final workflow completion, invalid completion handling, dependency-ordered worker execution, provider failures, and recovery of queued/running/completed/terminal states.
-- Placeholder package boundaries for [[04_APIs|APIs]], [[Response Cache]], [[Configuration]], and [[Provider Router]].
+- Placeholder package boundary for [[Configuration]].
 - Placeholder [[Frontend]] README.
 - `.gitignore` for Python, local databases, env files, frontend build outputs, and editor metadata.
 
@@ -56,7 +59,6 @@ This is the audited state of the repository.
 ## Missing
 
 - Database migrations.
-- Provider router.
 - Frontend app.
 - Authentication.
 - Environment configuration code.
@@ -72,13 +74,13 @@ Command run from `backend/`:
 .\.venv\Scripts\pytest.exe
 ```
 
-Result: pytest started successfully using Python 3.12.13, collected 62 items, and all 62 tests passed.
+Result: pytest started successfully using Python 3.12.13, collected 73 items, and all 73 tests passed.
 
 Running plain `pytest` from the shell failed because `pytest` is not on PATH.
 
 ## Known Mismatch
 
-`AtherOS_Project_Master_Document.md` states that Stage 0 features are built, including storage, event sourcing, checkpoint recovery, cache, mock provider, worker, and REST API. The audited source code now includes local storage, event sourcing, checkpoint replay, explicit local recovery, in-memory queue scheduling, a deterministic mock provider, a local worker, and a small REST API. Cache and provider routing are still missing; automatic restart recovery is not implemented. Treat those remaining Stage 0 claims as aspirational or stale until code is added.
+`AtherOS_Project_Master_Document.md` states that Stage 0 features are built, including storage, event sourcing, checkpoint recovery, cache, mock provider, worker, and REST API. The audited source code now includes local storage, event sourcing, checkpoint replay, explicit local recovery, in-memory queue scheduling, a deterministic mock provider, a single-provider router, a local worker, and a small REST API. Automatic restart recovery and multi-provider routing remain unimplemented. Treat those remaining Stage 0 claims as aspirational or stale until code is added.
 
 ## Current Assumptions in Code
 
@@ -98,6 +100,8 @@ Running plain `pytest` from the shell failed because `pytest` is not on PATH.
 - A task becomes queueable only after all dependency task IDs have completed.
 - The local worker executes one queued task at a time and treats a provider exception as a terminal workflow failure.
 - Cached provider outputs are keyed by task type, prompt, context needs, and quality tier; they are not persisted or replayed.
+- The current router always selects one provider. A multi-provider router must
+  make response-cache keys provider-aware.
 - Recovery preserves completed tasks, requeues queued and interrupted running tasks, and increments the attempt for re-executed tasks. It is at-least-once and is not automatic at service startup.
 
 ## Related

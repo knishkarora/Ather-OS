@@ -27,9 +27,9 @@ Implemented:
 
 ## Next Logical Work
 
-1. Define a provider router once more than the deterministic mock provider is needed.
-2. Add asynchronous execution and event inspection routes.
-3. Define automatic recovery, task ownership, and retry/timeout policy before running recovery at startup or across multiple workers.
+1. Add asynchronous execution and event inspection routes.
+2. Define automatic recovery, task ownership, and retry/timeout policy before running recovery at startup or across multiple workers.
+3. Add multi-provider routing policy and provider-aware cache keys only when a second provider is introduced.
 
 ## Phase 0 Vision
 

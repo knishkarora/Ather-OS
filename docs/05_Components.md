@@ -154,6 +154,8 @@ output and can be configured to fail specific task IDs for testing.
 `CachedTaskProvider` decorates a provider with an `InMemoryResponseCache` that
 reuses successful outputs for equivalent task type, prompt, context needs, and
 quality tier during one app process. Failures are never cached.
+`SingleProviderRouter` selects the one configured provider for every task, and
+`RoutedTaskProvider` adapts that selection to the worker's provider boundary.
 `WorkflowWorker` repeatedly claims ready tasks, executes them through a provider,
 records outputs or terminal failures through [[Queue Lifecycle Service]], and
 returns the replayed workflow snapshot.
@@ -176,6 +178,13 @@ over HTTP.
 Implemented in `backend/src/ather_os/cache/store.py` and
 `backend/src/ather_os/providers/cached.py`. Cache entries are intentionally
 process-local and are not lifecycle events or checkpoint data.
+
+### Provider Router
+
+Implemented in `backend/src/ather_os/providers/router.py` and documented in
+[[Provider Router]]. `ProviderRouter` selects a provider for a task. The local
+`SingleProviderRouter` intentionally returns the same provider for every task;
+`RoutedTaskProvider` executes through that selection without changing the worker.
 
 ## Placeholder Backend Component Boundaries
 

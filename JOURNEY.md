@@ -355,6 +355,46 @@ Supporting evidence:
 
 - `docs/journey-assets/2026-07-23-response-cache-tests.md`
 
+## Milestone: Thursday, 23 July 2026
+
+We introduced the first provider-routing boundary without pretending that the
+local engine has a real routing policy yet.
+
+What we completed:
+
+- added `ProviderRouter` to select a provider for each task
+- added `SingleProviderRouter`, which keeps all local tasks on the configured
+  deterministic provider
+- added `RoutedTaskProvider` so the existing worker contract stayed unchanged
+- wired the API through the router and retained process-local response caching
+- verified the backend suite with 73 passing tests
+
+Why this mattered:
+
+Provider selection now has one visible home. Adding a second provider later
+will not require changing worker scheduling or workflow lifecycle code.
+
+The main design decision:
+
+We used a one-provider router rather than inventing a registry, scoring model,
+or configuration file. Those additions would have no real decision to make
+until another provider exists.
+
+What I learned from this:
+
+An interface can be useful before multiple implementations exist when it
+protects an established boundary. The key is keeping the first implementation
+honest and nearly behavior-free.
+
+What I would do differently next time:
+
+When introducing a second output-producing provider, update the cache key in
+the same change so entries cannot cross provider or model boundaries.
+
+Supporting evidence:
+
+- `docs/journey-assets/2026-07-23-provider-router-tests.md`
+
 ## Future Journey Updates
 
 This file should stay readable. We will not update it after every tiny edit.
