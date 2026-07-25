@@ -125,6 +125,20 @@ timeout, or scheduler policy.
 
 Related: [[Execution Recovery Policy]], [[Checkpoint Engine]], [[Queue Lifecycle Service]], [[Worker]]
 
+## Use Cooperative Provider Deadlines Before Process Isolation
+
+Timed providers will receive an absolute deadline and use their own HTTP or SDK
+timeout support. A provider that cannot honor that deadline is not eligible for
+timed local execution. Process isolation is deferred until such a provider is
+needed.
+
+Reason: Python cannot safely cancel a generic running thread. Requiring the
+provider boundary to honor its own deadline avoids race-prone late outputs and
+does not add a child-process lifecycle to the current local worker. See
+[[Provider Timeout Policy]] for the event and implementation contract.
+
+Related: [[Provider Timeout Policy]], [[05_Components|Components]], [[Response Cache]], [[Worker]]
+
 ## Use FastAPI Background Tasks for Local Asynchronous Execution
 
 `POST /workflows` persists and queues a valid workflow, then schedules the

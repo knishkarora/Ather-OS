@@ -111,6 +111,9 @@ Running plain `pytest` from the shell failed because `pytest` is not on PATH.
 - The documented [[Execution Recovery Policy]] limits execution to one local
   process and defines the prerequisites for retries, timeouts, and automatic
   startup recovery; those features are not implemented yet.
+- [[Provider Timeout Policy]] selects cooperative provider deadlines for a
+  future timeout slice; timeout configuration and enforcement are not yet
+  implemented.
 
 ## Related
 

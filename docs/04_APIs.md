@@ -87,6 +87,8 @@ lookup, and duplicate workflow IDs.
 - There is no authentication or API versioning.
 - Cache contents last only for the app process and are not shared with a new app
   instance or restored during recovery.
+- Provider timeouts are not enforced yet; [[Provider Timeout Policy]] defines
+  the cooperative-deadline contract required before adding them.
 
 ## Related
 

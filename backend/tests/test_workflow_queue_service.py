@@ -7,6 +7,7 @@ from ather_os.queue import InMemoryQueueBroker, QueueBrokerError, WorkflowQueueS
 from ather_os.state import (
     TaskCompleted,
     TaskAttemptFailed,
+    TaskAttemptTimedOut,
     TaskQueued,
     TaskStarted,
     WorkflowCompleted,
@@ -115,6 +116,22 @@ def test_retrying_task_records_attempt_failure_and_requeues_task() -> None:
     assert isinstance(queued, TaskQueued)
     assert queued.task_id == TASK_A
     assert service.claim_next_task(WORKFLOW_ID) is not None
+
+
+def test_retrying_timed_out_task_records_timeout_and_requeues_task() -> None:
+    state_store = MemoryStateStore()
+    service = WorkflowQueueService(InMemoryQueueBroker(), state_store)
+    service.submit_workflow(_workflow())
+    service.claim_next_task(WORKFLOW_ID)
+
+    service.retry_timed_out_task(
+        WORKFLOW_ID, TASK_A, 1, 30, "Provider deadline exceeded"
+    )
+
+    timed_out, queued = state_store.events[-2:]
+    assert isinstance(timed_out, TaskAttemptTimedOut)
+    assert timed_out.timeout_seconds == 30
+    assert isinstance(queued, TaskQueued)
 
 
 def _workflow() -> Workflow:

@@ -6,6 +6,9 @@ This changelog records repository state changes that are visible from the audite
 
 ## 2026-07-26
 
+- Added [[Provider Timeout Policy]], selecting cooperative provider deadlines
+  over unsafe thread cancellation and deferring process isolation until a
+  non-cooperative provider is introduced.
 - Added [[Execution Recovery Policy]] to define process-local ownership,
   retry-budget meaning, timeout prerequisites, and the gates for automatic
   startup recovery.

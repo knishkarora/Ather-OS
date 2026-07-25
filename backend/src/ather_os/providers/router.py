@@ -1,3 +1,4 @@
+from datetime import datetime
 from typing import Protocol
 
 from ather_os.dag.models import Task
@@ -27,5 +28,5 @@ class RoutedTaskProvider:
     def __init__(self, router: ProviderRouter) -> None:
         self._router = router
 
-    def execute(self, task: Task) -> str:
-        return self._router.provider_for(task).execute(task)
+    def execute(self, task: Task, deadline: datetime | None = None) -> str:
+        return self._router.provider_for(task).execute(task, deadline)

@@ -1,8 +1,9 @@
+from datetime import UTC, datetime, timedelta
 from uuid import UUID
 
 from ather_os.checkpoint.models import WorkflowSnapshot
 from ather_os.checkpoint.query import WorkflowStatusQuery
-from ather_os.providers.provider import TaskProvider
+from ather_os.providers.provider import ProviderTimeoutError, TaskProvider
 from ather_os.queue.lifecycle import WorkflowQueueService
 
 
@@ -29,8 +30,21 @@ class WorkflowWorker:
             workflow_id, prior_attempts=attempts
         ):
             attempts[task.task_id] = attempts.get(task.task_id, 0) + 1
+            deadline = _deadline_for(task.timeout_seconds)
             try:
-                output = self._provider.execute(task)
+                output = self._provider.execute(task, deadline)
+            except ProviderTimeoutError as error:
+                if attempts[task.task_id] <= task.max_retries:
+                    self._queue_service.retry_timed_out_task(
+                        workflow_id,
+                        task.task_id,
+                        attempts[task.task_id],
+                        task.timeout_seconds or 1,
+                        str(error),
+                    )
+                    continue
+                self._queue_service.fail_task(workflow_id, task.task_id, str(error))
+                break
             except Exception as error:
                 if attempts[task.task_id] <= task.max_retries:
                     self._queue_service.retry_task(
@@ -45,3 +59,9 @@ class WorkflowWorker:
             self._queue_service.complete_task(workflow_id, task.task_id, output)
 
         return self._status_query.get_workflow(workflow_id)
+
+
+def _deadline_for(timeout_seconds: int | None) -> datetime | None:
+    if timeout_seconds is None:
+        return None
+    return datetime.now(UTC) + timedelta(seconds=timeout_seconds)

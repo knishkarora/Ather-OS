@@ -6,6 +6,7 @@ from pydantic import ValidationError
 from ather_os.state import (
     TaskCompleted,
     TaskAttemptFailed,
+    TaskAttemptTimedOut,
     TaskFailed,
     TaskStarted,
     WorkflowEventType,
@@ -46,6 +47,19 @@ def test_task_attempt_failed_records_attempt_and_error() -> None:
 
     assert event.event_type == WorkflowEventType.TASK_ATTEMPT_FAILED
     assert event.attempt == 1
+
+
+def test_task_attempt_timed_out_records_timeout_details() -> None:
+    event = TaskAttemptTimedOut(
+        workflow_id=WORKFLOW_ID,
+        task_id=TASK_A,
+        attempt=1,
+        timeout_seconds=30,
+        error="Provider deadline exceeded",
+    )
+
+    assert event.event_type == WorkflowEventType.TASK_ATTEMPT_TIMED_OUT
+    assert event.timeout_seconds == 30
 
 
 @pytest.mark.parametrize(

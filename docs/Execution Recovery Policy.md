@@ -38,14 +38,10 @@ retry belongs with a durable scheduler, not the in-memory broker.
 
 ## Timeout Contract for the Next Slice
 
-Timeout enforcement requires a provider boundary that can actually stop or
-isolate work. The current synchronous `TaskProvider.execute` interface cannot
-reliably cancel a running call, so recording a timeout today could cause a late
-provider result to be recorded after the task was retried.
-
-Before timeouts are enabled, the provider contract must define cancellation or
-execution isolation, and timeout lifecycle events must include an attempt
-number. A timed-out attempt follows the same retry-budget rules as another
+[[Provider Timeout Policy]] defines the chosen cooperative provider-deadline
+design. The current synchronous `TaskProvider.execute` interface does not yet
+receive a deadline, so timeout fields, events, and enforcement remain deferred.
+A timed-out attempt will follow the same retry-budget rules as another
 retryable failure.
 
 ## Automatic Recovery Prerequisites
@@ -68,7 +64,8 @@ silently creating it at startup.
 
 ## Implementation Order
 
-1. Define provider cancellation/isolation and add timeout handling.
+1. Implement cooperative provider deadlines and timeout lifecycle events using
+   [[Provider Timeout Policy]].
 2. Add durable lease ownership and unfinished-workflow discovery.
 3. Add automatic startup recovery only after those contracts are covered by
    concurrent-recovery tests.

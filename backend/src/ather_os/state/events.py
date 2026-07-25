@@ -16,6 +16,7 @@ class WorkflowEventType(StrEnum):
     TASK_QUEUED = "task_queued"
     TASK_STARTED = "task_started"
     TASK_ATTEMPT_FAILED = "task_attempt_failed"
+    TASK_ATTEMPT_TIMED_OUT = "task_attempt_timed_out"
     TASK_COMPLETED = "task_completed"
     TASK_FAILED = "task_failed"
     WORKFLOW_COMPLETED = "workflow_completed"
@@ -67,6 +68,18 @@ class TaskAttemptFailed(EventBase):
     error: str = Field(min_length=1)
 
 
+class TaskAttemptTimedOut(EventBase):
+    """Recorded when a task attempt reaches its configured provider deadline."""
+
+    event_type: Literal[WorkflowEventType.TASK_ATTEMPT_TIMED_OUT] = (
+        WorkflowEventType.TASK_ATTEMPT_TIMED_OUT
+    )
+    task_id: UUID
+    attempt: int = Field(ge=1)
+    timeout_seconds: int = Field(gt=0)
+    error: str = Field(min_length=1)
+
+
 class TaskCompleted(EventBase):
     """Recorded when a task produces its final output."""
 
@@ -103,6 +116,7 @@ WorkflowEvent = (
     | TaskQueued
     | TaskStarted
     | TaskAttemptFailed
+    | TaskAttemptTimedOut
     | TaskCompleted
     | TaskFailed
     | WorkflowCompleted
@@ -115,6 +129,7 @@ EVENT_MODELS: dict[WorkflowEventType, type[EventBase]] = {
     WorkflowEventType.TASK_QUEUED: TaskQueued,
     WorkflowEventType.TASK_STARTED: TaskStarted,
     WorkflowEventType.TASK_ATTEMPT_FAILED: TaskAttemptFailed,
+    WorkflowEventType.TASK_ATTEMPT_TIMED_OUT: TaskAttemptTimedOut,
     WorkflowEventType.TASK_COMPLETED: TaskCompleted,
     WorkflowEventType.TASK_FAILED: TaskFailed,
     WorkflowEventType.WORKFLOW_COMPLETED: WorkflowCompleted,

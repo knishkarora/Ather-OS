@@ -46,6 +46,16 @@ def test_task_rejects_negative_max_retries() -> None:
         _task(max_retries=-1)
 
 
+def test_task_accepts_optional_positive_timeout() -> None:
+    assert _task(timeout_seconds=30).timeout_seconds == 30
+
+
+@pytest.mark.parametrize("timeout_seconds", [0, -1])
+def test_task_rejects_non_positive_timeout(timeout_seconds: int) -> None:
+    with pytest.raises(ValidationError):
+        _task(timeout_seconds=timeout_seconds)
+
+
 def test_workflow_rejects_empty_goal() -> None:
     with pytest.raises(ValidationError):
         Workflow(workflow_id=WORKFLOW_ID, goal="", tasks=[_task()])
@@ -78,6 +88,7 @@ def _task(
     estimated_tokens: int = 100,
     quality_tier: QualityTier = QualityTier.STANDARD,
     max_retries: int = 2,
+    timeout_seconds: int | None = None,
 ) -> Task:
     return Task(
         task_id=task_id,
@@ -86,6 +97,7 @@ def _task(
         estimated_tokens=estimated_tokens,
         quality_tier=quality_tier,
         max_retries=max_retries,
+        timeout_seconds=timeout_seconds,
     )
 
 

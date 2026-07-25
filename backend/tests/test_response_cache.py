@@ -1,3 +1,4 @@
+from datetime import UTC, datetime, timedelta
 from uuid import UUID
 
 from ather_os.cache import InMemoryResponseCache
@@ -43,11 +44,22 @@ def test_task_cache_key_changes_when_output_affecting_fields_change() -> None:
     assert task_cache_key(task) != task_cache_key(changed_task)
 
 
+def test_cached_provider_forwards_deadline_only_on_cache_miss() -> None:
+    provider = DeadlineRecordingProvider()
+    cached_provider = CachedTaskProvider(provider, InMemoryResponseCache())
+    deadline = datetime.now(UTC) + timedelta(seconds=30)
+
+    cached_provider.execute(_task(FIRST_TASK_ID), deadline)
+    cached_provider.execute(_task(SECOND_TASK_ID), deadline + timedelta(seconds=30))
+
+    assert provider.deadlines == [deadline]
+
+
 class RecordingProvider:
     def __init__(self) -> None:
         self.calls = 0
 
-    def execute(self, task: Task) -> str:
+    def execute(self, task: Task, deadline=None) -> str:
         self.calls += 1
         return f"Provider output {self.calls}"
 
@@ -56,11 +68,20 @@ class FailingThenSuccessfulProvider:
     def __init__(self) -> None:
         self.calls = 0
 
-    def execute(self, task: Task) -> str:
+    def execute(self, task: Task, deadline=None) -> str:
         self.calls += 1
         if self.calls == 1:
             raise RuntimeError("Provider unavailable")
         return "Recovered output"
+
+
+class DeadlineRecordingProvider:
+    def __init__(self) -> None:
+        self.deadlines = []
+
+    def execute(self, task: Task, deadline=None) -> str:
+        self.deadlines.append(deadline)
+        return "Deadline-aware output"
 
 
 def _task(task_id: UUID) -> Task:

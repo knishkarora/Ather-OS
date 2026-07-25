@@ -33,6 +33,7 @@ class Task(BaseModel):
     estimated_tokens: int = Field(gt=0, le=8000)
     quality_tier: QualityTier = QualityTier.STANDARD
     max_retries: int = Field(default=2, ge=0)
+    timeout_seconds: int | None = Field(default=None, gt=0)
 
 
 class Workflow(BaseModel):
@@ -41,4 +42,3 @@ class Workflow(BaseModel):
     workflow_id: UUID
     goal: str = Field(min_length=1)
     tasks: list[Task] = Field(min_length=1, max_length=20)
-

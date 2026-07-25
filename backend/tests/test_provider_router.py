@@ -28,7 +28,7 @@ class RecordingProvider:
     def __init__(self) -> None:
         self.executed_task_ids: list[UUID] = []
 
-    def execute(self, task: Task) -> str:
+    def execute(self, task: Task, deadline=None) -> str:
         self.executed_task_ids.append(task.task_id)
         return "Routed output"
 

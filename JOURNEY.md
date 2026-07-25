@@ -489,6 +489,42 @@ Supporting evidence:
 
 - `docs/journey-assets/2026-07-26-retry-tests.md`
 
+## Milestone: Sunday, 26 July 2026
+
+We set the timeout and cancellation direction before adding timeout code.
+
+What we completed:
+
+- documented a cooperative provider-deadline policy
+- ruled out unsafe thread cancellation for the synchronous provider boundary
+- reserved process isolation for a future non-cooperative provider
+- defined the future timeout event, retry interaction, and implementation order
+
+Why this mattered:
+
+Timeouts can corrupt task history if a late provider output races with a retry.
+Choosing the provider boundary first keeps the future worker and checkpoint
+changes consistent.
+
+The biggest challenge:
+
+A generic synchronous Python call cannot be safely stopped. A simple-looking
+thread timeout would only stop waiting, not the provider work itself.
+
+The main design decision:
+
+Use provider-owned request deadlines for cooperative providers and defer
+subprocess isolation until it has a concrete need.
+
+What I learned from this:
+
+Timeout handling is an execution-ownership problem, not just a timer problem.
+
+What I would do differently next time:
+
+Add a deadline concept when introducing the first real remote provider, before
+its request code becomes part of the worker contract.
+
 ## Future Journey Updates
 
 This file should stay readable. We will not update it after every tiny edit.

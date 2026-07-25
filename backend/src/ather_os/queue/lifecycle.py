@@ -5,6 +5,7 @@ from ather_os.queue.broker import QueueBroker
 from ather_os.state.events import (
     TaskCompleted,
     TaskAttemptFailed,
+    TaskAttemptTimedOut,
     TaskFailed,
     TaskQueued,
     TaskStarted,
@@ -121,6 +122,28 @@ class WorkflowQueueService:
                 workflow_id=workflow_id,
                 task_id=task_id,
                 attempt=attempt,
+                error=error,
+            )
+        )
+        task = self._broker.requeue_task(workflow_id, task_id)
+        self._append_queued_tasks(workflow_id, [task])
+
+    def retry_timed_out_task(
+        self,
+        workflow_id: UUID,
+        task_id: UUID,
+        attempt: int,
+        timeout_seconds: int,
+        error: str,
+    ) -> None:
+        """Record a timed-out attempt and make the task ready for retry."""
+
+        self._state_store.append_event(
+            TaskAttemptTimedOut(
+                workflow_id=workflow_id,
+                task_id=task_id,
+                attempt=attempt,
+                timeout_seconds=timeout_seconds,
                 error=error,
             )
         )

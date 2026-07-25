@@ -165,6 +165,6 @@ class RecordingProvider:
     def __init__(self) -> None:
         self.calls = 0
 
-    def execute(self, task: Task) -> str:
+    def execute(self, task: Task, deadline=None) -> str:
         self.calls += 1
         return f"Provider output {self.calls}"

@@ -1,5 +1,6 @@
 import hashlib
 import json
+from datetime import datetime
 
 from ather_os.cache.store import ResponseCache
 from ather_os.dag.models import Task
@@ -13,13 +14,13 @@ class CachedTaskProvider:
         self._provider = provider
         self._response_cache = response_cache
 
-    def execute(self, task: Task) -> str:
+    def execute(self, task: Task, deadline: datetime | None = None) -> str:
         key = task_cache_key(task)
         cached_output = self._response_cache.get(key)
         if cached_output is not None:
             return cached_output
 
-        output = self._provider.execute(task)
+        output = self._provider.execute(task, deadline)
         self._response_cache.set(key, output)
         return output
 

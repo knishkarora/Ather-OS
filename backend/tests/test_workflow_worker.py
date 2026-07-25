@@ -4,7 +4,7 @@ from ather_os.checkpoint import TaskStatus, WorkflowStatus, WorkflowStatusQuery
 from ather_os.dag import Task, TaskType, Workflow
 from ather_os.providers import MockProvider
 from ather_os.queue import InMemoryQueueBroker, WorkflowQueueService
-from ather_os.state import TaskAttemptFailed, TaskFailed
+from ather_os.state import TaskAttemptFailed, TaskAttemptTimedOut, TaskFailed
 from ather_os.worker import WorkflowWorker
 
 
@@ -100,14 +100,41 @@ def test_worker_fails_after_retry_budget_is_exhausted() -> None:
     assert isinstance(state_store.events[-2], TaskFailed)
 
 
+def test_worker_retries_timed_out_task_until_budget_is_exhausted() -> None:
+    state_store = MemoryStateStore()
+    service = WorkflowQueueService(InMemoryQueueBroker(), state_store)
+    provider = RecordingMockProvider(timed_out_task_ids=[TASK_A])
+    worker = WorkflowWorker(service, provider, WorkflowStatusQuery(state_store))
+    workflow = Workflow(
+        workflow_id=WORKFLOW_ID,
+        goal="Timeout workflow execution",
+        tasks=[_task(TASK_A, max_retries=1, timeout_seconds=30)],
+    )
+    service.submit_workflow(workflow)
+
+    snapshot = worker.run_workflow(WORKFLOW_ID)
+
+    assert provider.executed_task_ids == [TASK_A, TASK_A]
+    assert snapshot.status == WorkflowStatus.FAILED
+    timed_out = [
+        event for event in state_store.events if isinstance(event, TaskAttemptTimedOut)
+    ]
+    assert len(timed_out) == 1
+    assert timed_out[0].timeout_seconds == 30
+
+
 class RecordingMockProvider(MockProvider):
-    def __init__(self, failing_task_ids: list[UUID] | None = None) -> None:
-        super().__init__(failing_task_ids or [])
+    def __init__(
+        self,
+        failing_task_ids: list[UUID] | None = None,
+        timed_out_task_ids: list[UUID] | None = None,
+    ) -> None:
+        super().__init__(failing_task_ids or [], timed_out_task_ids or [])
         self.executed_task_ids: list[UUID] = []
 
-    def execute(self, task: Task) -> str:
+    def execute(self, task: Task, deadline=None) -> str:
         self.executed_task_ids.append(task.task_id)
-        return super().execute(task)
+        return super().execute(task, deadline)
 
 
 class FlakyMockProvider(RecordingMockProvider):
@@ -115,12 +142,12 @@ class FlakyMockProvider(RecordingMockProvider):
         super().__init__()
         self._failures_remaining = failures_before_success
 
-    def execute(self, task: Task) -> str:
+    def execute(self, task: Task, deadline=None) -> str:
         self.executed_task_ids.append(task.task_id)
         if self._failures_remaining:
             self._failures_remaining -= 1
             raise RuntimeError(f"Temporary failure for {task.task_id}")
-        return MockProvider.execute(self, task)
+        return MockProvider.execute(self, task, deadline)
 
 
 def _workflow() -> Workflow:
@@ -140,6 +167,7 @@ def _task(
     task_id: UUID,
     dependencies: list[UUID] | None = None,
     max_retries: int = 2,
+    timeout_seconds: int | None = None,
 ) -> Task:
     return Task(
         task_id=task_id,
@@ -148,4 +176,5 @@ def _task(
         dependencies=dependencies or [],
         estimated_tokens=100,
         max_retries=max_retries,
+        timeout_seconds=timeout_seconds,
     )

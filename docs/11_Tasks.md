@@ -12,7 +12,8 @@ This task list is based on the audited current implementation.
 
 ## Backend Foundation Tasks
 
-- Design provider cancellation or isolation before implementing timeout handling.
+- Implement cooperative provider deadlines and timeout lifecycle events using
+  [[Provider Timeout Policy]].
 - Design durable ownership/leases and unfinished-workflow discovery before automatic startup recovery or multiple workers.
 - Define multi-provider routing policy and provider-aware cache keys only when a second provider is introduced.
 

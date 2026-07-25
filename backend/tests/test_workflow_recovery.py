@@ -8,6 +8,7 @@ from ather_os.state import (
     SQLiteStateStore,
     TaskCompleted,
     TaskAttemptFailed,
+    TaskAttemptTimedOut,
     TaskFailed,
     TaskQueued,
     TaskStarted,
@@ -117,6 +118,43 @@ def test_recovery_resumes_a_retryable_failed_attempt(tmp_path) -> None:
     assert snapshot.tasks[TASK_A].attempt == 2
 
 
+def test_recovery_resumes_a_timed_out_attempt(tmp_path) -> None:
+    store = SQLiteStateStore(tmp_path / "ather-os.sqlite3")
+    workflow = Workflow(
+        workflow_id=WORKFLOW_ID,
+        goal="Recover timed-out attempt",
+        tasks=[_task(TASK_A, timeout_seconds=30)],
+    )
+    store.append_event(
+        WorkflowSubmitted(
+            workflow_id=WORKFLOW_ID,
+            goal=workflow.goal,
+            task_ids=[TASK_A],
+            workflow=workflow,
+        )
+    )
+    store.append_event(TaskStarted(workflow_id=WORKFLOW_ID, task_id=TASK_A, attempt=1))
+    store.append_event(
+        TaskAttemptTimedOut(
+            workflow_id=WORKFLOW_ID,
+            task_id=TASK_A,
+            attempt=1,
+            timeout_seconds=30,
+            error="Provider deadline exceeded",
+        )
+    )
+
+    snapshot = WorkflowRecovery(
+        store,
+        WorkflowQueueService(InMemoryQueueBroker(), store),
+        RecordingMockProvider(),
+        WorkflowStatusQuery(store),
+    ).recover_workflow(WORKFLOW_ID)
+
+    assert snapshot.status == WorkflowStatus.COMPLETED
+    assert snapshot.tasks[TASK_A].attempt == 2
+
+
 def test_recovery_finalizes_completed_workflow_after_interrupted_terminal_event(tmp_path) -> None:
     store = SQLiteStateStore(tmp_path / "ather-os.sqlite3")
     workflow = Workflow(
@@ -186,9 +224,9 @@ class RecordingMockProvider(MockProvider):
         super().__init__()
         self.executed_task_ids: list[UUID] = []
 
-    def execute(self, task: Task) -> str:
+    def execute(self, task: Task, deadline=None) -> str:
         self.executed_task_ids.append(task.task_id)
-        return super().execute(task)
+        return super().execute(task, deadline)
 
 
 def _workflow() -> Workflow:
@@ -202,11 +240,16 @@ def _workflow() -> Workflow:
     )
 
 
-def _task(task_id: UUID, dependencies: list[UUID] | None = None) -> Task:
+def _task(
+    task_id: UUID,
+    dependencies: list[UUID] | None = None,
+    timeout_seconds: int | None = None,
+) -> Task:
     return Task(
         task_id=task_id,
         type=TaskType.RESEARCH,
         prompt=f"Run task {task_id}",
         dependencies=dependencies or [],
         estimated_tokens=100,
+        timeout_seconds=timeout_seconds,
     )

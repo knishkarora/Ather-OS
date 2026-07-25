@@ -28,8 +28,8 @@ Implemented:
 
 ## Next Logical Work
 
-1. Define provider cancellation/isolation and timeout behavior before adding
-   timeout events or enforcement.
+1. Implement cooperative provider deadlines and timeout lifecycle events as
+   defined in [[Provider Timeout Policy]].
 2. Add automatic recovery only after durable ownership/leases, unfinished-work
    discovery, and idempotent provider work are designed and tested.
 3. Add multi-provider routing policy and provider-aware cache keys only when a second provider is introduced.
