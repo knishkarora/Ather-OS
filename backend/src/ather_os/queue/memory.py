@@ -80,6 +80,15 @@ class InMemoryQueueBroker:
         queue.claimed_task_ids.discard(task_id)
         queue.queued_task_ids.discard(task_id)
 
+    def requeue_task(self, workflow_id: UUID, task_id: UUID) -> Task:
+        queue = self._get_queue(workflow_id)
+        self._ensure_known_task(queue, workflow_id, task_id)
+        queue.claimed_task_ids.discard(task_id)
+        if task_id not in queue.queued_task_ids:
+            queue.queued_task_ids.add(task_id)
+            queue.ready_task_ids.append(task_id)
+        return queue.tasks_by_id[task_id]
+
     def is_workflow_complete(self, workflow_id: UUID) -> bool:
         queue = self._get_queue(workflow_id)
         return len(queue.completed_task_ids) == len(queue.tasks_by_id)

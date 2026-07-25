@@ -7,6 +7,7 @@ from ather_os.queue import InMemoryQueueBroker, WorkflowQueueService
 from ather_os.state import (
     SQLiteStateStore,
     TaskCompleted,
+    TaskAttemptFailed,
     TaskFailed,
     TaskQueued,
     TaskStarted,
@@ -78,6 +79,42 @@ def test_recovery_keeps_completed_tasks_and_resumes_existing_queue(tmp_path) -> 
     assert snapshot.status == WorkflowStatus.COMPLETED
     assert snapshot.tasks[TASK_A].status == TaskStatus.COMPLETED
     assert snapshot.tasks[TASK_A].output == "Original task output"
+
+
+def test_recovery_resumes_a_retryable_failed_attempt(tmp_path) -> None:
+    store = SQLiteStateStore(tmp_path / "ather-os.sqlite3")
+    workflow = Workflow(
+        workflow_id=WORKFLOW_ID,
+        goal="Recover retryable attempt",
+        tasks=[_task(TASK_A)],
+    )
+    store.append_event(
+        WorkflowSubmitted(
+            workflow_id=WORKFLOW_ID,
+            goal=workflow.goal,
+            task_ids=[TASK_A],
+            workflow=workflow,
+        )
+    )
+    store.append_event(TaskStarted(workflow_id=WORKFLOW_ID, task_id=TASK_A, attempt=1))
+    store.append_event(
+        TaskAttemptFailed(
+            workflow_id=WORKFLOW_ID,
+            task_id=TASK_A,
+            attempt=1,
+            error="Temporary provider failure",
+        )
+    )
+
+    snapshot = WorkflowRecovery(
+        store,
+        WorkflowQueueService(InMemoryQueueBroker(), store),
+        RecordingMockProvider(),
+        WorkflowStatusQuery(store),
+    ).recover_workflow(WORKFLOW_ID)
+
+    assert snapshot.status == WorkflowStatus.COMPLETED
+    assert snapshot.tasks[TASK_A].attempt == 2
 
 
 def test_recovery_finalizes_completed_workflow_after_interrupted_terminal_event(tmp_path) -> None:

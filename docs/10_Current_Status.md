@@ -32,6 +32,9 @@ This is the audited state of the repository.
 - `WorkflowStatusQuery` replays stored workflow events into the current workflow/task snapshot.
 - `TaskProvider` protocol and deterministic `MockProvider` implementation for local execution.
 - `WorkflowWorker` runs a workflow through the queue lifecycle service, records terminal failures, and records workflow completion after the final task.
+- Retry-budget enforcement retries provider exceptions immediately and
+  sequentially up to each task's `max_retries` value, recording each retryable
+  failure separately from terminal failure.
 - FastAPI application with asynchronous `POST /workflows` submission, replay-backed `GET /workflows/{workflow_id}` status retrieval, and `GET /workflows/{workflow_id}/events` lifecycle inspection.
 - `WorkflowRecovery` rebuilds local queue state from persisted events and resumes unfinished workflows with at-least-once semantics for interrupted running tasks.
 - FastAPI `POST /workflows/{workflow_id}/recover` exposes explicit local recovery.
@@ -74,7 +77,7 @@ Command run from `backend/`:
 .\.venv\Scripts\pytest.exe
 ```
 
-Result: pytest started successfully using Python 3.12.13, collected 75 items, and all 75 tests passed.
+Result: pytest started successfully using Python 3.12.13, collected 81 items, and all 81 tests passed.
 
 Running plain `pytest` from the shell failed because `pytest` is not on PATH.
 
@@ -98,11 +101,16 @@ Running plain `pytest` from the shell failed because `pytest` is not on PATH.
 - Workflow/task snapshots are in-memory projections, not database tables.
 - The local queue keeps workflow scheduling state in memory only, while [[Queue Lifecycle Service]] appends related lifecycle events.
 - A task becomes queueable only after all dependency task IDs have completed.
-- The local worker executes one queued task at a time and treats a provider exception as a terminal workflow failure.
+- The local worker executes one queued task at a time and retries provider
+  exceptions until a task exhausts its `max_retries` budget, then records
+  terminal task and workflow failure.
 - Cached provider outputs are keyed by task type, prompt, context needs, and quality tier; they are not persisted or replayed.
 - The current router always selects one provider. A multi-provider router must
   make response-cache keys provider-aware.
 - Recovery preserves completed tasks, requeues queued and interrupted running tasks, and increments the attempt for re-executed tasks. It is at-least-once and is not automatic at service startup.
+- The documented [[Execution Recovery Policy]] limits execution to one local
+  process and defines the prerequisites for retries, timeouts, and automatic
+  startup recovery; those features are not implemented yet.
 
 ## Related
 

@@ -5,6 +5,7 @@ from pydantic import ValidationError
 
 from ather_os.state import (
     TaskCompleted,
+    TaskAttemptFailed,
     TaskFailed,
     TaskStarted,
     WorkflowEventType,
@@ -33,6 +34,18 @@ def test_workflow_submitted_records_goal_and_task_ids() -> None:
 def test_task_started_rejects_invalid_attempt() -> None:
     with pytest.raises(ValidationError):
         TaskStarted(workflow_id=WORKFLOW_ID, task_id=TASK_A, attempt=0)
+
+
+def test_task_attempt_failed_records_attempt_and_error() -> None:
+    event = TaskAttemptFailed(
+        workflow_id=WORKFLOW_ID,
+        task_id=TASK_A,
+        attempt=1,
+        error="Temporary provider failure",
+    )
+
+    assert event.event_type == WorkflowEventType.TASK_ATTEMPT_FAILED
+    assert event.attempt == 1
 
 
 @pytest.mark.parametrize(

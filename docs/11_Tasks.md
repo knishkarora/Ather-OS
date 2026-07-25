@@ -12,7 +12,8 @@ This task list is based on the audited current implementation.
 
 ## Backend Foundation Tasks
 
-- Design automatic recovery only after task ownership, retry-budget, and timeout policies are explicit.
+- Design provider cancellation or isolation before implementing timeout handling.
+- Design durable ownership/leases and unfinished-workflow discovery before automatic startup recovery or multiple workers.
 - Define multi-provider routing policy and provider-aware cache keys only when a second provider is introduced.
 
 ## Frontend Tasks

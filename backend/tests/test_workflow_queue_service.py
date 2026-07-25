@@ -6,6 +6,7 @@ from ather_os.dag import Task, TaskType, Workflow
 from ather_os.queue import InMemoryQueueBroker, QueueBrokerError, WorkflowQueueService
 from ather_os.state import (
     TaskCompleted,
+    TaskAttemptFailed,
     TaskQueued,
     TaskStarted,
     WorkflowCompleted,
@@ -98,6 +99,22 @@ def test_completing_final_task_records_workflow_completion() -> None:
     service.complete_task(WORKFLOW_ID, TASK_A, "Finished task A")
 
     assert isinstance(state_store.events[-1], WorkflowCompleted)
+
+
+def test_retrying_task_records_attempt_failure_and_requeues_task() -> None:
+    state_store = MemoryStateStore()
+    service = WorkflowQueueService(InMemoryQueueBroker(), state_store)
+    service.submit_workflow(_workflow())
+    service.claim_next_task(WORKFLOW_ID)
+
+    service.retry_task(WORKFLOW_ID, TASK_A, 1, "Temporary provider failure")
+
+    attempt_failed, queued = state_store.events[-2:]
+    assert isinstance(attempt_failed, TaskAttemptFailed)
+    assert attempt_failed.attempt == 1
+    assert isinstance(queued, TaskQueued)
+    assert queued.task_id == TASK_A
+    assert service.claim_next_task(WORKFLOW_ID) is not None
 
 
 def _workflow() -> Workflow:

@@ -47,6 +47,8 @@ Each task snapshot stores the task ID, current status, latest attempt number, op
 - Submitted task IDs become `pending` task snapshots.
 - `task_queued` marks a task as `queued`.
 - `task_started` marks a task as `running` and records the attempt number.
+- `task_attempt_failed` records a retryable failure and leaves the task queued
+  for its next local attempt.
 - `task_completed` marks a task as `completed` and records output.
 - `task_failed` marks a task as `failed` and records error text.
 - `workflow_completed` marks the workflow as `completed`.
@@ -75,7 +77,10 @@ exists for that attempt.
   submission is queued for process-local background execution.
 - Queue scheduling is restored only in the new local process; it is not a
   distributed lease or ownership mechanism.
-- There is no timeout, retry budget enforcement, or automatic startup recovery.
+- Local retry-budget enforcement is immediate and sequential; there is no
+  backoff, timeout, lease, or automatic startup recovery.
+- [[Execution Recovery Policy]] records the prerequisites and implementation
+  order for those deferred behaviors.
 
 ## Related
 

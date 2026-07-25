@@ -97,6 +97,34 @@ the single-process engine does not yet need.
 
 Related: [[Checkpoint Engine]], [[Queue Lifecycle Service]], [[Worker]], [[04_APIs|APIs]]
 
+## Keep Execution Ownership Process-Local Until Leases Exist
+
+The current local API process owns only the background tasks it submits. It
+does not persist a worker identity or lease, so a second process must not run
+against the same SQLite event database. Explicit recovery remains the only
+restart operation.
+
+Reason: automatically recovering `task_started` records without a lease and
+provider idempotency could execute the same task concurrently or duplicate a
+provider side effect. The [[Execution Recovery Policy]] defines the required
+event, provider, and storage changes before that behavior is added.
+
+Related: [[Execution Recovery Policy]], [[Checkpoint Engine]], [[Worker]], [[State Store]]
+
+## Retry Provider Failures Immediately in Local Mode
+
+The sequential local worker treats `Task.max_retries` as retries after the
+initial attempt. It records each retryable provider exception as
+`task_attempt_failed`, requeues the task immediately, and only emits terminal
+task/workflow failure after that budget is exhausted.
+
+Reason: an attempt-level event lets checkpoint replay and explicit recovery keep
+retryable work queueable while preserving the existing terminal meaning of
+`task_failed`. Immediate retries reuse the local queue without adding delay,
+timeout, or scheduler policy.
+
+Related: [[Execution Recovery Policy]], [[Checkpoint Engine]], [[Queue Lifecycle Service]], [[Worker]]
+
 ## Use FastAPI Background Tasks for Local Asynchronous Execution
 
 `POST /workflows` persists and queues a valid workflow, then schedules the

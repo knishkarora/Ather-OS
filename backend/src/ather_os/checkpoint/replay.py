@@ -8,6 +8,7 @@ from ather_os.checkpoint.models import (
 )
 from ather_os.state.events import (
     TaskCompleted,
+    TaskAttemptFailed,
     TaskFailed,
     TaskQueued,
     TaskStarted,
@@ -52,6 +53,11 @@ def replay_workflow(events: list[WorkflowEvent]) -> WorkflowSnapshot:
             task.status = TaskStatus.RUNNING
             task.attempt = event.attempt
             task.error = None
+        elif isinstance(event, TaskAttemptFailed):
+            task = _task(snapshot, event.task_id)
+            task.status = TaskStatus.QUEUED
+            task.attempt = event.attempt
+            task.error = event.error
         elif isinstance(event, TaskCompleted):
             task = _task(snapshot, event.task_id)
             task.status = TaskStatus.COMPLETED

@@ -18,6 +18,7 @@ This `/docs` folder is the Obsidian knowledge base for [[00_Project_Overview|Ath
 - [[06_State_Management|State Management]]
 - [[State Store]]
 - [[Checkpoint Engine]]
+- [[Execution Recovery Policy]]
 - [[07_Authentication|Authentication]]
 - [[08_UI_System|UI System]]
 

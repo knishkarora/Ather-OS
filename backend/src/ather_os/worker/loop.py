@@ -32,6 +32,14 @@ class WorkflowWorker:
             try:
                 output = self._provider.execute(task)
             except Exception as error:
+                if attempts[task.task_id] <= task.max_retries:
+                    self._queue_service.retry_task(
+                        workflow_id,
+                        task.task_id,
+                        attempts[task.task_id],
+                        str(error),
+                    )
+                    continue
                 self._queue_service.fail_task(workflow_id, task.task_id, str(error))
                 break
             self._queue_service.complete_task(workflow_id, task.task_id, output)

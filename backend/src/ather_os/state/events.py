@@ -15,6 +15,7 @@ class WorkflowEventType(StrEnum):
     WORKFLOW_SUBMITTED = "workflow_submitted"
     TASK_QUEUED = "task_queued"
     TASK_STARTED = "task_started"
+    TASK_ATTEMPT_FAILED = "task_attempt_failed"
     TASK_COMPLETED = "task_completed"
     TASK_FAILED = "task_failed"
     WORKFLOW_COMPLETED = "workflow_completed"
@@ -55,6 +56,17 @@ class TaskStarted(EventBase):
     attempt: int = Field(default=1, ge=1)
 
 
+class TaskAttemptFailed(EventBase):
+    """Recorded when a retryable task attempt fails and is requeued."""
+
+    event_type: Literal[WorkflowEventType.TASK_ATTEMPT_FAILED] = (
+        WorkflowEventType.TASK_ATTEMPT_FAILED
+    )
+    task_id: UUID
+    attempt: int = Field(ge=1)
+    error: str = Field(min_length=1)
+
+
 class TaskCompleted(EventBase):
     """Recorded when a task produces its final output."""
 
@@ -90,6 +102,7 @@ WorkflowEvent = (
     WorkflowSubmitted
     | TaskQueued
     | TaskStarted
+    | TaskAttemptFailed
     | TaskCompleted
     | TaskFailed
     | WorkflowCompleted
@@ -101,6 +114,7 @@ EVENT_MODELS: dict[WorkflowEventType, type[EventBase]] = {
     WorkflowEventType.WORKFLOW_SUBMITTED: WorkflowSubmitted,
     WorkflowEventType.TASK_QUEUED: TaskQueued,
     WorkflowEventType.TASK_STARTED: TaskStarted,
+    WorkflowEventType.TASK_ATTEMPT_FAILED: TaskAttemptFailed,
     WorkflowEventType.TASK_COMPLETED: TaskCompleted,
     WorkflowEventType.TASK_FAILED: TaskFailed,
     WorkflowEventType.WORKFLOW_COMPLETED: WorkflowCompleted,

@@ -24,6 +24,9 @@ class QueueBroker(Protocol):
     def mark_task_failed(self, workflow_id: UUID, task_id: UUID) -> None:
         """Mark a claimed task as failed so it cannot be claimed again."""
 
+    def requeue_task(self, workflow_id: UUID, task_id: UUID) -> Task:
+        """Return a claimed task to the ready queue for another local attempt."""
+
     def is_workflow_complete(self, workflow_id: UUID) -> bool:
         """Return whether every task in a workflow has completed."""
 

@@ -4,6 +4,19 @@
 
 This changelog records repository state changes that are visible from the audited files.
 
+## 2026-07-26
+
+- Added [[Execution Recovery Policy]] to define process-local ownership,
+  retry-budget meaning, timeout prerequisites, and the gates for automatic
+  startup recovery.
+- Added `task_attempt_failed`, replay support, local queue requeueing, and
+  sequential worker retry-budget enforcement using the existing
+  `Task.max_retries` field.
+- Added retry and recovery coverage; the backend suite now has 81 passing
+  tests.
+- Updated the roadmap and task list so provider cancellation/isolation and
+  timeout policy are the next slice.
+
 ## 2026-07-23
 
 - Changed `POST /workflows` to persist and queue workflows before executing the

@@ -10,6 +10,7 @@ from ather_os.checkpoint import (
 )
 from ather_os.state import (
     TaskCompleted,
+    TaskAttemptFailed,
     TaskFailed,
     TaskQueued,
     TaskStarted,
@@ -71,6 +72,27 @@ def test_replay_failed_task_marks_task_failed() -> None:
 
     assert task.status == TaskStatus.FAILED
     assert task.error == "Provider failed"
+
+
+def test_replay_retryable_attempt_keeps_task_queued() -> None:
+    snapshot = replay_workflow(
+        [
+            _submitted(),
+            TaskStarted(workflow_id=WORKFLOW_ID, task_id=TASK_A, attempt=1),
+            TaskAttemptFailed(
+                workflow_id=WORKFLOW_ID,
+                task_id=TASK_A,
+                attempt=1,
+                error="Temporary provider failure",
+            ),
+        ]
+    )
+
+    task = snapshot.tasks[TASK_A]
+
+    assert task.status == TaskStatus.QUEUED
+    assert task.attempt == 1
+    assert task.error == "Temporary provider failure"
 
 
 def test_replay_completed_workflow_marks_workflow_complete() -> None:

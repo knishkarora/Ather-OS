@@ -28,8 +28,11 @@ Implemented:
 
 ## Next Logical Work
 
-1. Define automatic recovery, task ownership, and retry/timeout policy before running recovery at startup or across multiple workers.
-2. Add multi-provider routing policy and provider-aware cache keys only when a second provider is introduced.
+1. Define provider cancellation/isolation and timeout behavior before adding
+   timeout events or enforcement.
+2. Add automatic recovery only after durable ownership/leases, unfinished-work
+   discovery, and idempotent provider work are designed and tested.
+3. Add multi-provider routing policy and provider-aware cache keys only when a second provider is introduced.
 
 ## Phase 0 Vision
 

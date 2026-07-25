@@ -4,6 +4,7 @@ from ather_os.dag.models import Task, Workflow
 from ather_os.queue.broker import QueueBroker
 from ather_os.state.events import (
     TaskCompleted,
+    TaskAttemptFailed,
     TaskFailed,
     TaskQueued,
     TaskStarted,
@@ -109,6 +110,22 @@ class WorkflowQueueService:
             TaskFailed(workflow_id=workflow_id, task_id=task_id, error=error)
         )
         self._state_store.append_event(WorkflowFailed(workflow_id=workflow_id, error=error))
+
+    def retry_task(
+        self, workflow_id: UUID, task_id: UUID, attempt: int, error: str
+    ) -> None:
+        """Record a failed attempt and make the task ready for its next attempt."""
+
+        self._state_store.append_event(
+            TaskAttemptFailed(
+                workflow_id=workflow_id,
+                task_id=task_id,
+                attempt=attempt,
+                error=error,
+            )
+        )
+        task = self._broker.requeue_task(workflow_id, task_id)
+        self._append_queued_tasks(workflow_id, [task])
 
     def _append_queued_tasks(self, workflow_id: UUID, tasks: list[Task]) -> None:
         for task in tasks:

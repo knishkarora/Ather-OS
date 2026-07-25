@@ -438,6 +438,57 @@ Supporting evidence:
 
 - `docs/journey-assets/2026-07-23-async-api-tests.md`
 
+## Milestone: Sunday, 26 July 2026
+
+We completed the local retry-budget slice for provider execution.
+
+What we completed:
+
+- defined the process-local ownership and recovery boundary in
+  `docs/Execution Recovery Policy.md`
+- added `task_attempt_failed` as a persisted event distinct from terminal task
+  failure
+- replayed retryable failures as queueable tasks so recovery can resume them
+- requeued failed attempts through the existing in-memory broker
+- enforced the existing `Task.max_retries` value in the sequential worker
+- verified successful retry, exhausted retry budget, and recovery after a
+  retryable failure
+- confirmed the backend suite passes with 81 tests
+
+Why this mattered:
+
+The `max_retries` field now has real execution meaning. Ather OS can distinguish
+an attempt that failed but may run again from a task that is permanently failed,
+which keeps the event log truthful and lets checkpoint recovery preserve pending
+retry work.
+
+The biggest challenge:
+
+The old `task_failed` event was already terminal in replay. Reusing it for a
+temporary provider error would have marked the task failed even when the worker
+was about to retry it.
+
+The main design decision:
+
+We added one small attempt-level event and reused the existing queue and worker
+boundaries. Retries are immediate and sequential: no backoff scheduler, timeout
+thread, or lease system was added before the local engine needs one.
+
+What I learned from this:
+
+An event name is a lifecycle promise. Separating attempt failure from terminal
+failure made retry, replay, and recovery agree without complicating the worker.
+
+What I would do differently next time:
+
+Define attempt-level events when the first task lifecycle is introduced. That
+would make retry-budget semantics explicit before the worker's first failure
+path is written.
+
+Supporting evidence:
+
+- `docs/journey-assets/2026-07-26-retry-tests.md`
+
 ## Future Journey Updates
 
 This file should stay readable. We will not update it after every tiny edit.

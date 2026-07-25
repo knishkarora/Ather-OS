@@ -114,7 +114,10 @@ Implemented in `backend/src/ather_os/state/`.
 - `StateStore` protocol in `store.py`.
 - `SQLiteStateStore` in `sqlite.py`.
 
-The current event model covers workflow submission, task queue/start/completion/failure, and workflow completion/failure. The SQLite implementation appends events to a `workflow_events` table and lists events for a workflow in append order.
+The current event model covers workflow submission, task queue/start,
+retryable-attempt failure, completion, terminal failure, and workflow
+completion/failure. The SQLite implementation appends events to a
+`workflow_events` table and lists events for a workflow in append order.
 
 This component does not schedule tasks or execute work. [[Checkpoint Engine]] owns status projection from stored events.
 
@@ -157,8 +160,10 @@ quality tier during one app process. Failures are never cached.
 `SingleProviderRouter` selects the one configured provider for every task, and
 `RoutedTaskProvider` adapts that selection to the worker's provider boundary.
 `WorkflowWorker` repeatedly claims ready tasks, executes them through a provider,
-records outputs or terminal failures through [[Queue Lifecycle Service]], and
-returns the replayed workflow snapshot.
+records outputs, retryable attempt failures, or terminal failures through
+[[Queue Lifecycle Service]], and returns the replayed workflow snapshot. It
+retries provider exceptions immediately and sequentially up to each task's
+`max_retries` budget.
 
 `WorkflowRecovery` rebuilds a local queue for an unfinished workflow from its
 persisted event stream. It treats a running task at interruption as an
