@@ -13,6 +13,10 @@ This changelog records repository state changes that are visible from the audite
 - Added lease contention/expiry and startup recovery coverage; the backend
   suite now has 93 passing tests.
 - Updated [[Automatic Recovery Plan]] and related architecture documentation.
+- Added [[UI Direction]] and preserved the user-provided frontend inspiration
+  assets for the staged frontend implementation.
+- Added the dependency-free Stage 1 [[Frontend]] workflow workspace and
+  [[Frontend Delivery Plan]] for feedback-driven UI delivery.
 
 ## 2026-07-26
 

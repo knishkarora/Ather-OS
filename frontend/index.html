@@ -1,0 +1,146 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta
+      name="description"
+      content="Ather OS workflow workspace prototype."
+    />
+    <title>Ather OS — Workflow workspace</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <main class="app-frame">
+      <header class="topbar">
+        <a class="brand" href="#workspace" aria-label="Ather OS home">Ather<span>OS</span></a>
+        <nav aria-label="Primary navigation">
+          <a class="nav-link is-active" href="#workspace">Workflows</a>
+          <a class="nav-link" href="#activity">Activity</a>
+          <a class="nav-link" href="#library">Library</a>
+        </nav>
+        <button class="profile-button" type="button" aria-label="Open profile menu">
+          <span class="profile-dot">KA</span>
+          <span>Local workspace</span>
+          <span aria-hidden="true">⌄</span>
+        </button>
+      </header>
+
+      <section class="workspace" id="workspace">
+        <aside class="rail" aria-label="Workspace tools">
+          <button class="rail-button is-selected" type="button" aria-label="Workflow board">⌘</button>
+          <button class="rail-button" type="button" aria-label="Workflow list">☷</button>
+          <button class="rail-button" type="button" aria-label="Event history">◌</button>
+          <span class="rail-divider"></span>
+          <button class="rail-button" type="button" aria-label="Workspace settings">⚙</button>
+        </aside>
+
+        <section class="workflow-board" aria-labelledby="page-title">
+          <div class="board-heading">
+            <div>
+              <p class="eyebrow">Workflow workspace</p>
+              <h1 id="page-title">Research a new provider</h1>
+              <p class="subheading">Compare local provider options and prepare a concise recommendation.</p>
+            </div>
+            <div class="heading-actions">
+              <button class="icon-button" type="button" aria-label="Search workflows">⌕</button>
+              <button class="new-workflow" type="button">＋ New workflow</button>
+            </div>
+          </div>
+
+          <section class="workflow-metrics" aria-label="Workflow summary">
+            <article class="metric-card metric-total"><strong>04</strong><span>Total tasks</span></article>
+            <article class="metric-card metric-complete"><strong>02</strong><span>Completed</span></article>
+            <article class="metric-card metric-running"><strong>01</strong><span>In progress</span></article>
+            <article class="metric-card metric-queued"><strong>01</strong><span>Queued</span></article>
+          </section>
+
+          <section class="board-toolbar" aria-label="Workflow controls">
+            <span class="workflow-status"><i></i> Workflow running</span>
+            <div class="toolbar-actions">
+              <button class="text-button" type="button">Fit board</button>
+              <button class="text-button" type="button">Filter ⌄</button>
+              <button class="round-button" type="button" aria-label="More workflow options">•••</button>
+            </div>
+          </section>
+
+          <section class="task-canvas" aria-label="Workflow task graph">
+            <div class="dependency-line dependency-one" aria-hidden="true"></div>
+            <div class="dependency-line dependency-two" aria-hidden="true"></div>
+
+            <button class="task-card task-completed task-source is-selected" type="button" data-task="discover">
+              <span class="task-icon">⌕</span>
+              <span class="card-menu">•••</span>
+              <span class="task-type">Research</span>
+              <strong>Discover provider options</strong>
+              <span class="task-copy">Map the available local and hosted provider choices.</span>
+              <span class="task-footer"><span class="status-pill completed">✓ Completed</span><span>Attempt 1</span></span>
+            </button>
+
+            <button class="task-card task-completed task-context" type="button" data-task="constraints">
+              <span class="task-icon">◈</span>
+              <span class="card-menu">•••</span>
+              <span class="task-type">Analysis</span>
+              <strong>Capture constraints</strong>
+              <span class="task-copy">Summarize reliability, timeout, and recovery requirements.</span>
+              <span class="task-footer"><span class="status-pill completed">✓ Completed</span><span>Attempt 1</span></span>
+            </button>
+
+            <button class="task-card task-running task-synthesis" type="button" data-task="compare">
+              <span class="task-icon">✦</span>
+              <span class="card-menu">•••</span>
+              <span class="task-type">Synthesis</span>
+              <strong>Compare trade-offs</strong>
+              <span class="task-copy">Turn the findings into a short, useful decision brief.</span>
+              <span class="task-footer"><span class="status-pill running">◌ Running</span><span>Attempt 1</span></span>
+              <span class="progress"><i></i></span>
+            </button>
+
+            <button class="task-card task-queued task-recommendation" type="button" data-task="recommend">
+              <span class="task-icon">↗</span>
+              <span class="card-menu">•••</span>
+              <span class="task-type">Recommendation</span>
+              <strong>Prepare recommendation</strong>
+              <span class="task-copy">Deliver the final provider recommendation and next step.</span>
+              <span class="task-footer"><span class="status-pill queued">○ Queued</span><span>Waiting on 1 task</span></span>
+            </button>
+          </section>
+        </section>
+
+        <aside class="inspector" id="activity" aria-labelledby="inspector-title">
+          <div class="inspector-heading">
+            <div>
+              <p class="eyebrow">Task inspector</p>
+              <h2 id="inspector-title">Discover provider options</h2>
+            </div>
+            <button class="round-button" type="button" aria-label="Task options">•••</button>
+          </div>
+
+          <div class="inspector-status"><span class="status-pill completed">✓ Completed</span><span id="attempt-label">Attempt 1</span></div>
+          <p class="inspector-copy" id="task-description">Map the available local and hosted provider choices.</p>
+
+          <dl class="task-facts">
+            <div><dt>Task type</dt><dd id="task-type">Research</dd></div>
+            <div><dt>Dependencies</dt><dd id="task-dependencies">None</dd></div>
+            <div><dt>Timeout</dt><dd id="task-timeout">Not configured</dd></div>
+          </dl>
+
+          <section class="result-panel">
+            <div class="result-heading"><span>Latest output</span><button type="button" aria-label="Copy output">⧉</button></div>
+            <p id="task-output">A focused list of provider candidates is ready for comparison.</p>
+          </section>
+
+          <section class="event-list" aria-labelledby="event-title">
+            <div class="event-heading"><h3 id="event-title">Recent activity</h3><button class="text-button" type="button">View all</button></div>
+            <ol>
+              <li><span class="event-icon completed">✓</span><div><strong>Task completed</strong><small>Output persisted successfully</small></div><time>Now</time></li>
+              <li><span class="event-icon neutral">→</span><div><strong>Recommendation queued</strong><small>Waiting for comparison</small></div><time>Now</time></li>
+              <li><span class="event-icon running">◌</span><div><strong>Comparison started</strong><small>Provider execution is active</small></div><time>1m</time></li>
+            </ol>
+          </section>
+        </aside>
+      </section>
+    </main>
+    <script src="app.js"></script>
+  </body>
+</html>

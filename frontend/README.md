@@ -1,15 +1,16 @@
 # Ather OS Frontend
 
-The frontend will become the user-facing side of Ather OS.
+The frontend is being built in feedback-driven stages. Stage 1 is a native
+HTML, CSS, and JavaScript workflow-workspace prototype with local demo data.
+It has no dependencies, build step, or backend connection yet.
 
-For Phase 0, the frontend is only a placeholder. The main work is happening in
-the backend because the first goal is to prove the local execution engine:
+Run it from this directory:
 
-- submit a workflow
-- inspect workflow status
-- view task/event progress
-- eventually visualize the execution trace
+```powershell
+python -m http.server 4173
+```
 
-We are keeping this folder from the beginning so the project structure stays
-clear as the system grows.
+Then open `http://localhost:4173`.
 
+See [[../docs/Frontend Delivery Plan|Frontend Delivery Plan]] and
+[[../docs/UI Direction|UI Direction]] for the implementation boundaries.

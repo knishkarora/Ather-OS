@@ -50,7 +50,10 @@ This is the audited state of the repository.
 - Pytest coverage for API submission, validation, persisted status retrieval, lifecycle-event inspection, missing workflows, and duplicate workflow IDs.
 - Pytest coverage for workflow submission events, task claim/completion events, dependency unblocking events, final workflow completion, invalid completion handling, dependency-ordered worker execution, provider failures, and recovery of queued/running/completed/terminal states.
 - Placeholder package boundary for [[Configuration]].
-- Placeholder [[Frontend]] README.
+- Dependency-free Stage 1 [[Frontend]] workflow workspace prototype with local
+  demo data and clickable task inspection.
+- [[UI Direction]] documenting the visual direction and local inspiration
+  assets for future frontend work.
 - `.gitignore` for Python, local databases, env files, frontend build outputs, and editor metadata.
 
 ## Partially Completed

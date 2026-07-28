@@ -2,23 +2,32 @@
 
 [[README|Knowledge Base Home]] > UI System
 
-There is no UI system implemented yet.
+The frontend is in its first feedback-driven implementation stage.
+
+## Visual Direction
+
+[[UI Direction]] records the agreed visual north star and stores four
+user-provided inspiration references under `docs/ui-assets/inspiration/`. They
+define the desired interface feel and reusable visual language, not a literal
+screen design or product requirements. [[Frontend Delivery Plan]] defines the
+review gates for turning this direction into the product UI.
 
 ## Current Frontend State
 
-The `frontend/` folder contains only `frontend/README.md`. It states that the frontend is a placeholder and that Phase 0 work is focused on proving the local backend execution engine.
+The `frontend/` folder now contains a dependency-free Stage 1 workflow
+workspace prototype: `index.html`, `styles.css`, and `app.js`. It uses local
+demo data and lets a reviewer select task cards to inspect their details.
 
 There is no:
 
-- Frontend framework.
-- `package.json`.
+- Frontend framework or `package.json`.
 - Routing system.
 - Component library.
 - Styling setup.
 - Design tokens.
-- Pages.
+- Backend-connected pages.
 - API client.
-- State management.
+- Persistent frontend state management.
 - Asset pipeline.
 
 ## Planned UI Responsibility
@@ -34,7 +43,9 @@ These planned screens will depend on [[04_APIs|APIs]], [[06_State_Management|Sta
 
 ## Current Component Relationships
 
-Not applicable. There are no UI components or pages to map.
+Stage 1 has a static application shell, workflow board, task cards, task
+inspector, and activity feed. See [[Frontend Delivery Plan]] for the stages
+that add workflow creation and live backend data.
 
 ## Future Relationship Map
 
@@ -54,3 +65,5 @@ This is intended architecture only.
 - [[04_APIs|APIs]]
 - [[05_Components|Components]]
 - [[10_Current_Status|Current Status]]
+- [[UI Direction]]
+- [[Frontend Delivery Plan]]

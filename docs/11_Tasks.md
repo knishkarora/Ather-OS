@@ -18,10 +18,10 @@ This task list is based on the audited current implementation.
 
 ## Frontend Tasks
 
-- Decide the frontend framework and add a basic app structure.
-- Add workflow submission view after API exists.
-- Add workflow status view after state projections exist.
-- Add execution trace view after event logs exist.
+- Gather feedback on Stage 1 of [[Frontend Delivery Plan]].
+- Build the local-state workflow builder in Stage 2.
+- Add workflow submission and status data in Stage 3.
+- Add execution trace and explicit recovery in Stage 4.
 
 ## Quality Tasks
 

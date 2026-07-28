@@ -23,6 +23,8 @@ This `/docs` folder is the Obsidian knowledge base for [[00_Project_Overview|Ath
 - [[Provider Timeout Policy]]
 - [[07_Authentication|Authentication]]
 - [[08_UI_System|UI System]]
+- [[UI Direction]]
+- [[Frontend Delivery Plan]]
 
 ## Project Memory
 
