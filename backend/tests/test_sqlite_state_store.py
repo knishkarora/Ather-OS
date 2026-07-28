@@ -1,4 +1,5 @@
 import sqlite3
+from datetime import UTC, datetime, timedelta
 from uuid import UUID
 
 import pytest
@@ -81,3 +82,40 @@ def test_sqlite_state_store_rejects_duplicate_event_ids(tmp_path) -> None:
 
     with pytest.raises(sqlite3.IntegrityError):
         store.append_event(event)
+
+
+def test_sqlite_state_store_discovers_unfinished_workflows_and_leases_them(tmp_path) -> None:
+    store = SQLiteStateStore(tmp_path / "ather-os.sqlite3")
+    store.append_event(
+        WorkflowSubmitted(
+            workflow_id=WORKFLOW_ID,
+            goal="Finished workflow",
+            task_ids=[TASK_A],
+        )
+    )
+    store.append_event(WorkflowCompleted(workflow_id=WORKFLOW_ID))
+    store.append_event(
+        WorkflowSubmitted(
+            workflow_id=OTHER_WORKFLOW_ID,
+            goal="Unfinished workflow",
+            task_ids=[TASK_A],
+        )
+    )
+
+    now = datetime(2026, 7, 28, tzinfo=UTC)
+    first_owner = UUID("00000000-0000-0000-0000-000000000010")
+    second_owner = UUID("00000000-0000-0000-0000-000000000020")
+
+    assert store.list_unfinished_workflow_ids() == [OTHER_WORKFLOW_ID]
+    assert store.try_acquire_workflow_lease(
+        OTHER_WORKFLOW_ID, first_owner, now + timedelta(minutes=1), now
+    )
+    assert not store.try_acquire_workflow_lease(
+        OTHER_WORKFLOW_ID, second_owner, now + timedelta(minutes=2), now
+    )
+    assert store.try_acquire_workflow_lease(
+        OTHER_WORKFLOW_ID,
+        second_owner,
+        now + timedelta(minutes=3),
+        now + timedelta(minutes=1),
+    )

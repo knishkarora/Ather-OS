@@ -2,9 +2,8 @@
 
 [[README|Knowledge Base Home]] > Provider Timeout Policy
 
-This policy defines how Ather OS will add task deadlines without pretending
-that a generic synchronous Python call can be forcibly cancelled. It is a
-design contract; timeout fields, events, and enforcement are not implemented.
+This policy defines the cooperative deadline design now implemented in Ather
+OS. It also records the boundary against unsafe generic cancellation.
 
 ## Decision
 
@@ -33,7 +32,7 @@ handoff policy beyond the current sequential worker.
 - **Isolation later:** a child process is the only generic force-stop option,
   but it is not free or necessary until a non-cooperative provider is added.
 
-## Future Provider Contract
+## Provider Contract
 
 The future `TaskProvider` contract should receive an absolute deadline rather
 than a worker-managed sleep duration. An absolute deadline prevents time spent
@@ -83,16 +82,12 @@ the existing terminal `task_failed` and `workflow_failed` events are recorded.
 Timeouts and ordinary provider exceptions therefore share the current immediate,
 sequential retry budget.
 
-## Required Implementation Sequence
+## Completed Implementation
 
-1. Add optional `timeout_seconds` validation to [[Task Model]].
-2. Add the deadline argument and `ProviderTimeoutError` to `TaskProvider`,
-   then forward it through cache and routing decorators.
-3. Extend the mock provider with a controllable cooperative timeout for tests.
-4. Add `task_attempt_timed_out` parsing and checkpoint replay.
-5. Let [[Worker]] calculate the deadline and apply existing retry-budget logic.
-6. Add focused tests for cache hits, timeout retries, exhausted budgets, and
-   recovery from a persisted timeout event.
+The implementation supplies all six planned pieces: task validation, deadline
+forwarding, controllable mock timeouts, timeout events and replay, worker retry
+handling, and focused coverage for cache, retries, exhausted budgets, and
+recovery.
 
 ## Non-Goals
 

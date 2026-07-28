@@ -35,9 +35,14 @@ This is the audited state of the repository.
 - Retry-budget enforcement retries provider exceptions immediately and
   sequentially up to each task's `max_retries` value, recording each retryable
   failure separately from terminal failure.
+- Optional positive per-task timeouts are passed to providers as cooperative
+  absolute deadlines. Timeout attempts are persisted and share the existing
+  immediate retry budget.
 - FastAPI application with asynchronous `POST /workflows` submission, replay-backed `GET /workflows/{workflow_id}` status retrieval, and `GET /workflows/{workflow_id}/events` lifecycle inspection.
 - `WorkflowRecovery` rebuilds local queue state from persisted events and resumes unfinished workflows with at-least-once semantics for interrupted running tasks.
 - FastAPI `POST /workflows/{workflow_id}/recover` exposes explicit local recovery.
+- API startup automatically discovers and leases unfinished workflows before
+  recovering them when using the default deterministic mock provider.
 - Process-local response cache wraps provider execution and reuses successful outputs for equivalent tasks.
 - `ProviderRouter`, `SingleProviderRouter`, and `RoutedTaskProvider` separate
   future provider selection from worker execution while preserving one local
@@ -77,13 +82,16 @@ Command run from `backend/`:
 .\.venv\Scripts\pytest.exe
 ```
 
-Result: pytest started successfully using Python 3.12.13, collected 81 items, and all 81 tests passed.
+Result: pytest started successfully using Python 3.12.13, collected 93 items, and all 93 tests passed.
 
 Running plain `pytest` from the shell failed because `pytest` is not on PATH.
 
 ## Known Mismatch
 
-`AtherOS_Project_Master_Document.md` states that Stage 0 features are built, including storage, event sourcing, checkpoint recovery, cache, mock provider, worker, and REST API. The audited source code now includes local storage, event sourcing, checkpoint replay, explicit local recovery, in-memory queue scheduling, a deterministic mock provider, a single-provider router, a local worker, and a small REST API. Automatic restart recovery and multi-provider routing remain unimplemented. Treat those remaining Stage 0 claims as aspirational or stale until code is added.
+`AtherOS_Project_Master_Document.md` overstates the production readiness of
+Stage 0. The code supports automatic restart recovery only for the local
+deterministic mock provider; caller-supplied providers, multi-provider routing,
+and multi-worker execution remain unimplemented.
 
 ## Current Assumptions in Code
 
@@ -107,13 +115,12 @@ Running plain `pytest` from the shell failed because `pytest` is not on PATH.
 - Cached provider outputs are keyed by task type, prompt, context needs, and quality tier; they are not persisted or replayed.
 - The current router always selects one provider. A multi-provider router must
   make response-cache keys provider-aware.
-- Recovery preserves completed tasks, requeues queued and interrupted running tasks, and increments the attempt for re-executed tasks. It is at-least-once and is not automatic at service startup.
+- Recovery preserves completed tasks, requeues queued and interrupted running tasks, and increments the attempt for re-executed tasks. It is at-least-once; startup recovery is automatic only for the default deterministic mock provider after acquiring a SQLite lease.
 - The documented [[Execution Recovery Policy]] limits execution to one local
-  process and defines the prerequisites for retries, timeouts, and automatic
-  startup recovery; those features are not implemented yet.
-- [[Provider Timeout Policy]] selects cooperative provider deadlines for a
-  future timeout slice; timeout configuration and enforcement are not yet
-  implemented.
+  process. Automatic recovery of a caller-supplied provider remains deferred
+  until idempotency keys are designed.
+- [[Provider Timeout Policy]] is implemented for cooperative providers; process
+  isolation remains deferred.
 
 ## Related
 

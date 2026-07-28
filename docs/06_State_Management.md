@@ -14,12 +14,15 @@ The backend now has an append-only local [[State Store]] foundation:
 - [[Checkpoint Engine]] projection models and event replay in `backend/src/ather_os/checkpoint`.
 - [[Queue Lifecycle Service]] coordination between local queue transitions and lifecycle events.
 - Explicit [[Checkpoint Engine]]-backed worker recovery for interrupted local workflows.
+- SQLite unfinished-workflow discovery and atomic workflow leases for automatic
+  deterministic-provider recovery at API startup.
 - Attempt-level retry failure events and sequential local retry-budget
   enforcement.
 
-There is still no frontend state management or automatic startup recovery. The
-API queues process-local background execution and exposes status, event
-inspection, and explicit recovery routes.
+There is still no frontend state management. The API queues process-local
+background execution and exposes status, event inspection, and explicit
+recovery routes; its default mock-provider mode also resumes safely leased
+unfinished workflows at startup.
 
 [[Workflow Model]] and [[Task Model]] instances are still validated in memory before state is persisted. Pydantic validates field shape, and [[DAG Validator]] validates dependency structure before future stateful execution systems rely on it.
 
@@ -66,9 +69,8 @@ Not applicable. The [[Frontend]] has no application code or state library.
 
 ## Missing State Work
 
-- Define provider cancellation/isolation before adding timeout handling.
-- Add automatic recovery only after durable ownership/leases and
-  unfinished-workflow discovery exist.
+- Add idempotency keys before extending automatic recovery to caller-supplied
+  providers.
 
 ## Related
 

@@ -1,3 +1,4 @@
+from datetime import UTC, datetime, timedelta
 from uuid import UUID
 
 from ather_os.checkpoint import (
@@ -85,3 +86,18 @@ class WorkflowRecovery:
             interrupted_task_ids,
         )
         return self._worker.run_workflow(workflow_id, prior_attempts)
+
+    def recover_unfinished_workflows(
+        self, owner_id: UUID, lease_duration: timedelta = timedelta(minutes=1)
+    ) -> list[WorkflowSnapshot]:
+        """Recover locally owned unfinished workflows after app startup."""
+
+        now = datetime.now(UTC)
+        expires_at = now + lease_duration
+        snapshots = []
+        for workflow_id in self._state_store.list_unfinished_workflow_ids():
+            if self._state_store.try_acquire_workflow_lease(
+                workflow_id, owner_id, expires_at, now
+            ):
+                snapshots.append(self.recover_workflow(workflow_id))
+        return snapshots

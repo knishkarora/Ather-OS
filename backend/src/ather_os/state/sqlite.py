@@ -1,4 +1,5 @@
 import sqlite3
+from datetime import datetime
 from pathlib import Path
 from uuid import UUID
 
@@ -53,6 +54,56 @@ class SQLiteStateStore:
 
         return [parse_workflow_event(row["payload"]) for row in rows]
 
+    def list_unfinished_workflow_ids(self) -> list[UUID]:
+        """Return workflows that have not reached a terminal event."""
+
+        with self._connect() as connection:
+            rows = connection.execute(
+                """
+                SELECT DISTINCT submitted.workflow_id
+                FROM workflow_events AS submitted
+                WHERE submitted.event_type = 'workflow_submitted'
+                AND NOT EXISTS (
+                    SELECT 1
+                    FROM workflow_events AS terminal
+                    WHERE terminal.workflow_id = submitted.workflow_id
+                    AND terminal.event_type IN ('workflow_completed', 'workflow_failed')
+                )
+                ORDER BY submitted.sequence
+                """
+            ).fetchall()
+
+        return [UUID(row["workflow_id"]) for row in rows]
+
+    def try_acquire_workflow_lease(
+        self,
+        workflow_id: UUID,
+        owner_id: UUID,
+        expires_at: datetime,
+        now: datetime,
+    ) -> bool:
+        """Atomically claim a workflow when its existing lease has expired."""
+
+        with self._connect() as connection:
+            cursor = connection.execute(
+                """
+                INSERT INTO workflow_leases (workflow_id, owner_id, expires_at)
+                VALUES (?, ?, ?)
+                ON CONFLICT(workflow_id) DO UPDATE SET
+                    owner_id = excluded.owner_id,
+                    expires_at = excluded.expires_at
+                WHERE workflow_leases.expires_at <= ?
+                """,
+                (
+                    str(workflow_id),
+                    str(owner_id),
+                    expires_at.isoformat(),
+                    now.isoformat(),
+                ),
+            )
+
+        return cursor.rowcount == 1
+
     def _initialize(self) -> None:
         self.database_path.parent.mkdir(parents=True, exist_ok=True)
 
@@ -74,6 +125,15 @@ class SQLiteStateStore:
                 """
                 CREATE INDEX IF NOT EXISTS idx_workflow_events_workflow_id
                 ON workflow_events (workflow_id, sequence)
+                """
+            )
+            connection.execute(
+                """
+                CREATE TABLE IF NOT EXISTS workflow_leases (
+                    workflow_id TEXT PRIMARY KEY,
+                    owner_id TEXT NOT NULL,
+                    expires_at TEXT NOT NULL
+                )
                 """
             )
 

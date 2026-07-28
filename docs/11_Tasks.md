@@ -12,15 +12,13 @@ This task list is based on the audited current implementation.
 
 ## Backend Foundation Tasks
 
-- Implement cooperative provider deadlines and timeout lifecycle events using
-  [[Provider Timeout Policy]].
-- Design durable ownership/leases and unfinished-workflow discovery before automatic startup recovery or multiple workers.
+- Add provider idempotency keys before allowing automatic recovery with a
+  caller-supplied provider.
 - Define multi-provider routing policy and provider-aware cache keys only when a second provider is introduced.
 
 ## Frontend Tasks
 
-- Decide frontend framework.
-- Add basic app structure.
+- Decide the frontend framework and add a basic app structure.
 - Add workflow submission view after API exists.
 - Add workflow status view after state projections exist.
 - Add execution trace view after event logs exist.

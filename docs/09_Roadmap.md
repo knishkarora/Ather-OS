@@ -23,16 +23,21 @@ Implemented:
 - Deterministic mock provider and in-process [[Worker]] execution with terminal failure recording.
 - Process-local [[Response Cache]] around provider execution.
 - Process-local asynchronous workflow execution and event inspection routes.
+- Per-task cooperative provider deadlines, timeout lifecycle events, and
+  timeout retry behavior.
+- SQLite workflow leases and automatic startup recovery for unfinished
+  deterministic-provider workflows.
 - Placeholder [[Frontend]] folder.
 - Root project and journey documentation.
 
 ## Next Logical Work
 
-1. Implement cooperative provider deadlines and timeout lifecycle events as
-   defined in [[Provider Timeout Policy]].
-2. Add automatic recovery only after durable ownership/leases, unfinished-work
-   discovery, and idempotent provider work are designed and tested.
-3. Add multi-provider routing policy and provider-aware cache keys only when a second provider is introduced.
+1. Start the frontend foundation using the existing
+   submission, status, and event-inspection API surface.
+2. Add idempotency keys before enabling automatic recovery for caller-supplied
+   providers.
+3. Add multi-provider routing policy and provider-aware cache keys only when a
+   second provider is introduced.
 
 ## Phase 0 Vision
 
@@ -40,10 +45,12 @@ The project documents describe Phase 0 as a local backend engine with:
 
 - Validated workflow DAGs. Schema validation, structural validation, sample JSON files, and a local validation command are now implemented; execution is not.
 - Event-sourced state. The local append-only [[State Store]] now exists.
-- Checkpoint recovery. In-memory replay, status projections, and explicit local worker recovery now exist; automatic startup recovery does not.
+- Checkpoint recovery. In-memory replay, status projections, explicit local
+  recovery, and automatic mock-provider startup recovery now exist.
 - Process-local response caching is implemented; durable or shared caching is deferred.
 - Mock provider execution. A deterministic implementation now exists.
-- In-process worker. A sequential local implementation now exists; restart recovery does not.
+- In-process worker. A sequential local implementation now exists, including
+  leased restart recovery for the default deterministic provider.
 - Small API for running and inspecting workflows.
 
 The schema, graph validation, local event storage, checkpoint replay, explicit recovery, local provider, and worker execution parts currently exist.

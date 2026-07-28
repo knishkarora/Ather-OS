@@ -111,6 +111,18 @@ event, provider, and storage changes before that behavior is added.
 
 Related: [[Execution Recovery Policy]], [[Checkpoint Engine]], [[Worker]], [[State Store]]
 
+## Automatically Recover Only the Deterministic Mock Provider
+
+At FastAPI startup, the default `MockProvider` mode discovers unfinished
+workflows and acquires a SQLite lease before recovering each one. A
+caller-supplied provider keeps recovery explicit.
+
+Reason: interrupted work is at-least-once. The deterministic mock provider has
+no external side effects, while a future real provider needs an idempotency key
+before the application can safely repeat a request after a restart.
+
+Related: [[Automatic Recovery Plan]], [[Execution Recovery Policy]], [[04_APIs|APIs]]
+
 ## Retry Provider Failures Immediately in Local Mode
 
 The sequential local worker treats `Task.max_retries` as retries after the

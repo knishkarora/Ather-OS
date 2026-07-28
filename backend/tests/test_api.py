@@ -111,6 +111,38 @@ def test_recover_workflow_restores_interrupted_execution(tmp_path) -> None:
     assert response.json()["tasks"][TASK_A]["attempt"] == 2
 
 
+def test_app_startup_recovers_interrupted_mock_workflows(tmp_path) -> None:
+    database_path = tmp_path / "ather-os.sqlite3"
+    store = SQLiteStateStore(database_path)
+    queue_service = WorkflowQueueService(InMemoryQueueBroker(), store)
+    queue_service.submit_workflow(Workflow.model_validate(_workflow_payload()))
+    queue_service.claim_next_task(UUID(WORKFLOW_ID))
+
+    with TestClient(create_app(database_path)) as client:
+        response = client.get(f"/workflows/{WORKFLOW_ID}")
+
+    assert response.status_code == 200
+    assert response.json()["status"] == "completed"
+    assert response.json()["tasks"][TASK_A]["attempt"] == 2
+
+
+def test_app_startup_keeps_custom_provider_recovery_explicit(tmp_path) -> None:
+    database_path = tmp_path / "ather-os.sqlite3"
+    store = SQLiteStateStore(database_path)
+    queue_service = WorkflowQueueService(InMemoryQueueBroker(), store)
+    queue_service.submit_workflow(Workflow.model_validate(_workflow_payload()))
+    queue_service.claim_next_task(UUID(WORKFLOW_ID))
+    provider = RecordingProvider()
+
+    with TestClient(create_app(database_path, provider)) as client:
+        response = client.get(f"/workflows/{WORKFLOW_ID}")
+
+    assert response.status_code == 200
+    assert response.json()["status"] == "pending"
+    assert response.json()["tasks"][TASK_A]["status"] == "running"
+    assert provider.calls == 0
+
+
 def test_get_workflow_events_returns_append_ordered_lifecycle_events(tmp_path) -> None:
     client = TestClient(create_app(tmp_path / "ather-os.sqlite3"))
     client.post("/workflows", json=_workflow_payload())

@@ -20,6 +20,11 @@ The module exports `app`, so it can be run from `backend/` with:
 
 The default local event database is `ather-os.sqlite3` in the working directory.
 
+At startup, an app using the default deterministic `MockProvider` discovers
+unfinished workflows, atomically leases each one in SQLite, and resumes it.
+Apps configured with a caller-supplied provider keep recovery explicit because
+their provider work may have external side effects.
+
 ## Routes
 
 ### `POST /workflows`
@@ -80,15 +85,15 @@ lookup, and duplicate workflow IDs.
 ## Current Limits
 
 - Background execution is process-local; it stops if the app process stops.
-- Recovery is explicit; the app does not automatically resume unfinished
-  workflows at startup.
+- Startup recovery is limited to the default deterministic mock provider. A
+  caller-supplied provider continues to require explicit recovery.
 - The router selects one deterministic local provider for every task; there is
   no multi-provider policy.
 - There is no authentication or API versioning.
 - Cache contents last only for the app process and are not shared with a new app
   instance or restored during recovery.
-- Provider timeouts are not enforced yet; [[Provider Timeout Policy]] defines
-  the cooperative-deadline contract required before adding them.
+- Provider deadlines are cooperative; [[Provider Timeout Policy]] excludes
+  non-cooperative providers from timed local execution.
 
 ## Related
 

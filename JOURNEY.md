@@ -525,6 +525,43 @@ What I would do differently next time:
 Add a deadline concept when introducing the first real remote provider, before
 its request code becomes part of the worker contract.
 
+## Milestone: Monday, 28 July 2026
+
+We made local restart recovery automatic without pretending it is exactly-once.
+
+What we completed:
+
+- added SQLite discovery for unfinished workflows and atomic per-workflow leases
+- resumed leased unfinished workflows during FastAPI startup with the default
+  deterministic mock provider
+- kept caller-supplied providers on the explicit recovery route until they can
+  accept idempotency keys
+
+Why this mattered:
+
+The engine can now recover ordinary local mock work after a restart while still
+making the safety boundary visible when real provider side effects arrive.
+
+The biggest challenge:
+
+The same event history can be observed by more than one process. The lease must
+be a single SQLite statement so only one process gets to resume that history.
+
+The main design decision:
+
+Reuse the existing event log and recovery service, adding only one small lease
+table. No scheduler, distributed lock, or new dependency was needed.
+
+What I learned from this:
+
+Automatic recovery is really an ownership problem. A lease can protect who
+replays work, but it cannot make an external side effect safe to repeat.
+
+What I would do differently next time:
+
+Define provider idempotency alongside the first real provider so automatic
+recovery does not need a separate safety boundary later.
+
 ## Future Journey Updates
 
 This file should stay readable. We will not update it after every tiny edit.

@@ -4,6 +4,16 @@
 
 This changelog records repository state changes that are visible from the audited files.
 
+## 2026-07-28
+
+- Added SQLite unfinished-workflow discovery and atomic workflow leases.
+- Added FastAPI startup recovery for unfinished workflows when the default
+  deterministic mock provider is configured; caller-supplied providers remain
+  explicit-recovery only.
+- Added lease contention/expiry and startup recovery coverage; the backend
+  suite now has 93 passing tests.
+- Updated [[Automatic Recovery Plan]] and related architecture documentation.
+
 ## 2026-07-26
 
 - Added [[Provider Timeout Policy]], selecting cooperative provider deadlines

@@ -1,5 +1,6 @@
+from contextlib import asynccontextmanager
 from pathlib import Path
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from fastapi import BackgroundTasks, FastAPI, HTTPException, status
 
@@ -29,14 +30,22 @@ def create_app(
     queue_service = WorkflowQueueService(InMemoryQueueBroker(), state_store)
     status_query = WorkflowStatusQuery(state_store)
     response_cache = InMemoryResponseCache()
-    provider_router = SingleProviderRouter(provider or MockProvider())
+    auto_recovery_enabled = provider is None
+    configured_provider = provider or MockProvider()
+    provider_router = SingleProviderRouter(configured_provider)
     task_provider = CachedTaskProvider(RoutedTaskProvider(provider_router), response_cache)
     worker = WorkflowWorker(queue_service, task_provider, status_query)
     recovery = WorkflowRecovery(
         state_store, queue_service, task_provider, status_query
     )
 
-    app = FastAPI(title="Ather OS", version="0.1.0")
+    @asynccontextmanager
+    async def lifespan(app: FastAPI):
+        if auto_recovery_enabled:
+            recovery.recover_unfinished_workflows(uuid4())
+        yield
+
+    app = FastAPI(title="Ather OS", version="0.1.0", lifespan=lifespan)
     app.state.state_store = state_store
     app.state.queue_service = queue_service
     app.state.status_query = status_query

@@ -2,10 +2,9 @@
 
 [[README|Knowledge Base Home]] > Execution Recovery Policy
 
-This policy defines the boundary that must exist before Ather OS adds retry
-handling, task timeouts, automatic startup recovery, or more than one worker.
-It describes the current local mode and the contract for the next implementation
-slice; it does not claim those features are implemented.
+This policy defines the boundary that must exist before Ather OS adds automatic
+startup recovery or more than one worker. It describes the current local mode
+and the contract for the next implementation slice.
 
 ## Current Local Contract
 
@@ -18,8 +17,8 @@ slice; it does not claim those features are implemented.
 - A process interruption after `task_started` is handled only by the explicit
   recovery route. The task is requeued and may execute again, so recovery is
   at-least-once.
-- Provider calls have no timeout or cancellation boundary. A task may therefore
-  remain `running` until the process exits or the provider returns.
+- Providers receive an optional cooperative absolute deadline. Providers that
+  cannot honor it are not eligible for timed local execution.
 
 ## Retry Contract
 
@@ -36,13 +35,11 @@ non-retryable error type, so every provider exception follows this budget.
 There is no backoff policy. Local retries are immediate and sequential; delayed
 retry belongs with a durable scheduler, not the in-memory broker.
 
-## Timeout Contract for the Next Slice
+## Timeout Contract
 
-[[Provider Timeout Policy]] defines the chosen cooperative provider-deadline
-design. The current synchronous `TaskProvider.execute` interface does not yet
-receive a deadline, so timeout fields, events, and enforcement remain deferred.
-A timed-out attempt will follow the same retry-budget rules as another
-retryable failure.
+[[Provider Timeout Policy]] defines the implemented cooperative
+provider-deadline design. A timed-out attempt follows the same retry-budget
+rules as another retryable failure.
 
 ## Automatic Recovery Prerequisites
 
@@ -64,8 +61,7 @@ silently creating it at startup.
 
 ## Implementation Order
 
-1. Implement cooperative provider deadlines and timeout lifecycle events using
-   [[Provider Timeout Policy]].
+1. Review the idempotency boundary in [[Automatic Recovery Plan]].
 2. Add durable lease ownership and unfinished-workflow discovery.
 3. Add automatic startup recovery only after those contracts are covered by
    concurrent-recovery tests.
@@ -77,6 +73,7 @@ silently creating it at startup.
 - [[Queue Broker]]
 - [[Worker]]
 - [[State Store]]
+- [[Automatic Recovery Plan]]
 - [[04_APIs|APIs]]
 - [[13_Decisions|Decisions]]
 - [[11_Tasks|Tasks]]
