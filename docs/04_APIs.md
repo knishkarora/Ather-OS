@@ -20,6 +20,10 @@ The module exports `app`, so it can be run from `backend/` with:
 
 The default local event database is `ather-os.sqlite3` in the working directory.
 
+The local API permits browser requests from the Vite development server at
+`http://localhost:5173` (and its loopback equivalent), as well as the legacy
+static-preview port `4173`.
+
 At startup, an app using the default deterministic `MockProvider` discovers
 unfinished workflows, atomically leases each one in SQLite, and resumes it.
 Apps configured with a caller-supplied provider keep recovery explicit because

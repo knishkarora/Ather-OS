@@ -98,10 +98,20 @@ backend/
 
 ```text
 frontend/
+|-- index.html
+|-- input.css
+|-- package.json
+|-- src/
+|   |-- App.jsx
+|   `-- main.jsx
+|-- vite.config.js
 `-- README.md
 ```
 
-The [[Frontend]] is a placeholder. There is no `package.json`, framework configuration, component tree, routing setup, build pipeline, or UI source code.
+The [[Frontend]] is a dependency-light React and Vite workspace. Tailwind CSS
+is compiled by Vite from `input.css`; `src/App.jsx` owns the draft editor,
+local API polling, append-ordered event trace, and explicit recovery action.
+There is no routing setup or component library.
 
 ## Docs
 
@@ -110,7 +120,8 @@ The `docs/` folder is this Obsidian knowledge base. It is the single source of t
 ## Relationship Map
 
 - [[Backend]] owns [[DAG Models]], [[DAG Validator]], sample workflow JSON files, the workflow validation command, the local [[State Store]] foundation, the local [[Checkpoint Engine]] replay foundation, and the local [[Queue Broker]] scheduling foundation today.
-- [[Frontend]] depends on future [[04_APIs|APIs]], but no dependency exists in code yet.
+- [[Frontend]] submits to and polls [[04_APIs|APIs]] through the local FastAPI
+  endpoints.
 - [[04_APIs|APIs]] will depend on [[DAG Models]] when implemented.
 - [[State Store]] has lifecycle event models, a storage protocol, and a SQLite implementation.
 - [[Checkpoint Engine]] has status projection models and event replay logic.

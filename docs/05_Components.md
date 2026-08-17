@@ -2,7 +2,7 @@
 
 [[README|Knowledge Base Home]] > Components
 
-This project currently has backend domain components only. There are no frontend UI components.
+This project has backend domain components and one native frontend workspace.
 
 ## Implemented Backend Components
 
@@ -198,9 +198,15 @@ The following backend packages exist but contain no executable implementation:
 
 - [[Configuration]]: `backend/src/ather_os/config`
 
-## Frontend Components
+## Frontend Workspace
 
-Not applicable yet. The [[Frontend]] has only `frontend/README.md`; there are no pages, components, hooks, styles, services, or assets.
+`frontend/src/App.jsx` implements the React workflow workspace. It has a local
+draft builder, a dependency preview, and an execution surface. The execution
+surface posts reviewed workflow payloads to [[04_APIs|APIs]], then polls the
+workflow snapshot and append-ordered event trace until the workflow reaches a
+terminal state. An unfinished workflow offers explicit recovery and explains
+its at-least-once execution effect. The browser keeps only the active run's
+task-ID-to-label mapping so backend snapshots retain meaningful task titles.
 
 ## Relationship Summary
 

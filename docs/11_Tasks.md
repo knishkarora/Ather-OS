@@ -18,10 +18,10 @@ This task list is based on the audited current implementation.
 
 ## Frontend Tasks
 
-- Gather feedback on Stage 1 of [[Frontend Delivery Plan]].
-- Build the local-state workflow builder in Stage 2.
-- Add workflow submission and status data in Stage 3.
-- Add execution trace and explicit recovery in Stage 4.
+- Gather feedback on the completed Stage 3/4 execution and recovery view in
+  [[Frontend Delivery Plan]].
+- Complete Stage 5 responsive, accessibility, empty/error-state, and visual
+  consistency polish.
 
 ## Quality Tasks
 

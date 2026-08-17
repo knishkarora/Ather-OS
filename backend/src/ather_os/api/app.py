@@ -3,12 +3,14 @@ from pathlib import Path
 from uuid import UUID, uuid4
 
 from fastapi import BackgroundTasks, FastAPI, HTTPException, status
+from fastapi.middleware.cors import CORSMiddleware
 
 from ather_os.cache import InMemoryResponseCache
 from ather_os.checkpoint import CheckpointReplayError, WorkflowSnapshot, WorkflowStatusQuery
 from ather_os.dag import DagValidationError, Workflow
 from ather_os.providers import (
     CachedTaskProvider,
+    LLMProvider,
     MockProvider,
     RoutedTaskProvider,
     SingleProviderRouter,
@@ -31,7 +33,7 @@ def create_app(
     status_query = WorkflowStatusQuery(state_store)
     response_cache = InMemoryResponseCache()
     auto_recovery_enabled = provider is None
-    configured_provider = provider or MockProvider()
+    configured_provider = provider or LLMProvider()
     provider_router = SingleProviderRouter(configured_provider)
     task_provider = CachedTaskProvider(RoutedTaskProvider(provider_router), response_cache)
     worker = WorkflowWorker(queue_service, task_provider, status_query)
@@ -46,6 +48,17 @@ def create_app(
         yield
 
     app = FastAPI(title="Ather OS", version="0.1.0", lifespan=lifespan)
+    app.add_middleware(
+        CORSMiddleware,
+        allow_origins=[
+            "http://localhost:4173",
+            "http://127.0.0.1:4173",
+            "http://localhost:5173",
+            "http://127.0.0.1:5173",
+        ],
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
     app.state.state_store = state_store
     app.state.queue_service = queue_service
     app.state.status_query = status_query

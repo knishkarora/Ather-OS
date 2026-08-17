@@ -29,8 +29,10 @@ obvious, and structured enough for serious debugging.
 
 The strongest shared characteristics to carry forward are:
 
-- An intentional app frame: a dark or near-black navigation shell surrounding
-  a light workspace, rather than a flat generic dashboard.
+- A full-width dark or near-black top product navigation, with the light
+  workspace below it. The reference's rounded application frame is an
+  inspiration for warmth and containment, not a reason to float navigation
+  below the top of the page.
 - A warm off-white main canvas with generous rounded corners and controlled
   depth through soft shadows or subtle borders.
 - Compact, information-rich task cards with a clear title, status, progress,
@@ -75,6 +77,14 @@ state needs a text label and an icon or shape cue as well.
 
 The exact palette, typeface, spacing scale, icon set, and responsive rules are
 design decisions to be provided with the final UI design.
+
+## Stage 1 Refinement
+
+The initial prototype was refined after review: navigation now sits flush at
+the product top level, type contrast and heading hierarchy are stronger, and
+task/inspector surfaces use clearer borders and state color. The underlying
+soft, tactile card language remains deliberately contained to the workflow
+workspace rather than being applied to every page element.
 
 ## Implementation Guardrails
 

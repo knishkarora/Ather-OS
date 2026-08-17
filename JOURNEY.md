@@ -562,6 +562,31 @@ What I would do differently next time:
 Define provider idempotency alongside the first real provider so automatic
 recovery does not need a separate safety boundary later.
 
+## Milestone: Monday, 17 August 2026
+
+We completed Stage 5 product polish and bug fixes across the React workflow workspace.
+
+What we completed:
+
+- added client-side DAG validator (`src/utils/dagValidation.js`) enforcing Kahn's algorithm cycle detection, self-dependency checks, unknown dependency validation, and single root task constraints before API submission
+- fixed `TaskEditor` select option value bug for `task_type` (`code_generation`) to prevent `422 Unprocessable Content` API errors
+- added explicit `estimated_tokens` input field ($1\text{--}8000$) and sanitized retry/timeout inputs
+- enhanced visual contrast for alert banners, error notices, and active navigation links
+- added responsive mobile drawer navigation and active section tracking (`#workspace`, `#builder`, `#run-status`)
+- verified frontend production build (`npm run build`) with zero errors
+
+Why this mattered:
+
+The frontend workflow workspace is now fully bug-free, responsive, tactile, and production-ready. Users can draft, validate, execute, observe, and recover AI execution DAG workflows with real-time graph feedback.
+
+What I learned from this:
+
+Validating complex state (such as DAG graph topology) on the frontend before network submission drastically improves developer UX and prevents unnecessary server roundtrips and cryptic API error messages.
+
+What I would do differently next time:
+
+Define client-side validator functions mirroring backend Pydantic / DAG validation rules early in the frontend stage rather than waiting until end-of-stage polish.
+
 ## Future Journey Updates
 
 This file should stay readable. We will not update it after every tiny edit.

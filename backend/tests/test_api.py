@@ -15,7 +15,8 @@ UNKNOWN_WORKFLOW_ID = UUID("00000000-0000-0000-0000-000000009999")
 
 
 def test_submit_workflow_queues_it_and_executes_in_the_background(tmp_path) -> None:
-    client = TestClient(create_app(tmp_path / "ather-os.sqlite3"))
+    from ather_os.providers.mock import MockProvider
+    client = TestClient(create_app(tmp_path / "ather-os.sqlite3", MockProvider()))
 
     response = client.post("/workflows", json=_workflow_payload())
 
@@ -168,6 +169,17 @@ def test_get_events_for_unknown_workflow_returns_not_found(tmp_path) -> None:
     response = client.get(f"/workflows/{UNKNOWN_WORKFLOW_ID}/events")
 
     assert response.status_code == 404
+
+
+def test_api_allows_the_local_frontend_origin(tmp_path) -> None:
+    client = TestClient(create_app(tmp_path / "ather-os.sqlite3"))
+
+    response = client.get(
+        f"/workflows/{UNKNOWN_WORKFLOW_ID}",
+        headers={"Origin": "http://localhost:4173"},
+    )
+
+    assert response.headers["access-control-allow-origin"] == "http://localhost:4173"
 
 
 def _workflow_payload() -> dict:

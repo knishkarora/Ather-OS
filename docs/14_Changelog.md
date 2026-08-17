@@ -4,6 +4,51 @@
 
 This changelog records repository state changes that are visible from the audited files.
 
+## 2026-08-17
+
+- Fixed Groq fallback model configuration in `backend/.env` from non-existent `openai/gpt-oss-120b` to valid Groq model `llama-3.3-70b-versatile`, resolving `HTTP 403 Forbidden` error on fallback calls.
+- Increased NVIDIA NIM read operation socket timeout from 45s to 60s in `backend/src/ather_os/providers/llm.py` and added `User-Agent: AtherOS/1.0` headers with detailed HTTP error body extraction.
+- Added **Workflow Deliverables & Results Inspector View** in `App.jsx` showing full generated model responses for all workflow phases with code formatting (`pre`/`code`) and single-click copy buttons.
+- Updated task status card color palette:
+  - **Executing**: Warm Pulsing Amber/Yellow (`border-amber-300 bg-amber-100`)
+  - **Completed**: Mint/Emerald Green (`border-emerald-300 bg-emerald-50`)
+  - **Queued / Waiting**: Soft Lavender/Bluish-Purple (`border-indigo-200 bg-indigo-50` / `border-purple-200 bg-purple-50`)
+  - **Failed**: Coral Red (`border-red-300 bg-red-50`)
+- Populated `backend/.env` securely with NVIDIA NIM (`nvapi-...`) and Groq (`gsk_...`) API keys without hardcoding secrets in Python source code.
+- Configured task-specific model routing:
+  - `research`, `analysis`, `writing`, `validation` -> NVIDIA NIM (`meta/llama-3.3-70b-instruct`).
+  - `code_generation` -> NVIDIA NIM (`meta/llama-3.2-3b-instruct`).
+  - Fallback -> Groq API (`openai/gpt-oss-120b`).
+- Ensured `.env` is listed in `.gitignore` to prevent secret exposure on GitHub.
+- Added `LLMProvider` in `backend/src/ather_os/providers/llm.py` with multi-provider routing and Groq fallback.
+- Completed Stage 5 frontend polish and bug fixes in React workflow workspace.
+- Added client-side DAG validator (`dagValidation.js`) enforcing cycle detection via Kahn's algorithm, self-dependency checks, unknown dependency validation, and single root task constraints.
+- Fixed `TaskEditor` select option value bug for `task_type` (`code_generation`) to prevent `422 Unprocessable Content` API errors.
+- Added explicit `estimated_tokens` input field and sanitized retry/timeout inputs.
+- Enhanced contrast for alert banners, error notices, and active navigation links.
+- Added responsive mobile drawer navigation and active section tracking (`#workspace`, `#builder`, `#run-status`).
+
+## 2026-08-12
+
+- Migrated the frontend from manual DOM manipulation to a minimal React and
+  Vite workspace, retaining Tailwind CSS and avoiding a router, UI library, or
+  external client-state package.
+- Completed the Stage 4 recovery slice with a visible recovery action for
+  unfinished workflows, append-ordered trace rendering, and explicit
+  at-least-once execution wording.
+- Added the Vite development-server origins to the local API CORS allowlist.
+- Completed the Stage 3 frontend polling loop: submitted workflows now refresh
+  their replayed status and append-ordered lifecycle trace until reaching a
+  terminal state.
+- Updated workspace copy and frontend setup documentation to describe the
+  live local API integration accurately.
+
+## 2026-08-03
+
+- Reworked the Stage 2 frontend navigation into a full-width dark product bar.
+- Added a live workspace summary for the local workflow draft and made the
+  execution activity surface discoverable before the first run.
+
 ## 2026-07-28
 
 - Added SQLite unfinished-workflow discovery and atomic workflow leases.
@@ -17,6 +62,11 @@ This changelog records repository state changes that are visible from the audite
   assets for the staged frontend implementation.
 - Added the dependency-free Stage 1 [[Frontend]] workflow workspace and
   [[Frontend Delivery Plan]] for feedback-driven UI delivery.
+- Refined Stage 1 after feedback: product navigation now sits at the page top,
+  with stronger typography, contrast, and task-state surfaces.
+- Migrated the frontend styling to Tailwind CSS and added the Stage 2 local
+  workflow builder with task editing, dependency controls, and structural
+  review feedback.
 
 ## 2026-07-26
 

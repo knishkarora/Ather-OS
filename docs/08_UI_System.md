@@ -14,19 +14,23 @@ review gates for turning this direction into the product UI.
 
 ## Current Frontend State
 
-The `frontend/` folder now contains a dependency-free Stage 1 workflow
-workspace prototype: `index.html`, `styles.css`, and `app.js`. It uses local
-demo data and lets a reviewer select task cards to inspect their details.
+The `frontend/` folder contains a React and Vite workflow workspace:
+`src/main.jsx`, `src/App.jsx`, `input.css`, and `vite.config.js`. Its dark
+product navigation links a workspace summary, local draft builder, and visible
+execution activity surface. React state keeps the summary, builder, live run,
+event trace, and recovery action synchronized.
+
+The Activity surface translates the local workflow snapshot into a completion
+indicator and task cards. While a submitted run is active, it polls the
+existing status and event endpoints, preserving the trace's append order. It
+uses no additional client-side state layer beyond the active run's task-label
+mapping.
 
 There is no:
 
-- Frontend framework or `package.json`.
 - Routing system.
 - Component library.
-- Styling setup.
 - Design tokens.
-- Backend-connected pages.
-- API client.
 - Persistent frontend state management.
 - Asset pipeline.
 
@@ -43,9 +47,10 @@ These planned screens will depend on [[04_APIs|APIs]], [[06_State_Management|Sta
 
 ## Current Component Relationships
 
-Stage 1 has a static application shell, workflow board, task cards, task
-inspector, and activity feed. See [[Frontend Delivery Plan]] for the stages
-that add workflow creation and live backend data.
+Stage 1 established the application shell and workflow board. Stage 2 replaces
+the static board with a local workflow builder, a live structure preview, and a
+workspace summary that makes the draft and next action legible before entering
+the form. See [[Frontend Delivery Plan]] for the stage that adds backend data.
 
 ## Future Relationship Map
 

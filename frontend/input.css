@@ -1,0 +1,29 @@
+@import "tailwindcss";
+
+@theme {
+  --color-ink: #15161b;
+  --color-canvas: #f3f5f2;
+  --color-line: #dfe4df;
+  --color-mint: #c7f4d2;
+  --color-mint-strong: #167844;
+  --color-lilac: #e5d3fa;
+  --color-cream: #fff1b8;
+  --color-cyan: #c9edf5;
+  --font-sans: "Avenir Next", "Segoe UI Variable", "Segoe UI", ui-sans-serif, system-ui, sans-serif;
+}
+
+@layer base {
+  html { scroll-behavior: smooth; }
+  body { @apply min-w-80 bg-canvas font-sans text-ink antialiased; }
+  button, input, select, textarea { font: inherit; }
+  button { @apply cursor-pointer; }
+  input, select, textarea { @apply outline-none; }
+  input:focus, select:focus, textarea:focus { @apply ring-2 ring-ink/25; }
+  .field { @apply mt-1.5 w-full rounded-xl border border-line bg-white px-3 py-2.5 text-sm text-ink placeholder:text-ink/35 transition focus:border-ink/40; }
+}
+
+@layer components {
+  .nav-link { @apply flex h-full items-center border-b-2 border-transparent px-3.5 text-xs font-bold text-white/60 transition hover:border-mint/60 hover:text-white; }
+  .nav-link[aria-current="page"], .nav-link.aria-current-page { @apply border-mint text-white font-extrabold; }
+  .nav-link:focus-visible { @apply outline-none ring-2 ring-mint ring-offset-2 ring-offset-ink; }
+}
