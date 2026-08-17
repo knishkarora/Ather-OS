@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { validateDag } from "./utils/dagValidation";
+import AtherLogo from "./components/AtherLogo";
 
 const apiBase = "http://127.0.0.1:8000";
 const terminalStates = new Set(["completed", "failed"]);
@@ -293,56 +294,87 @@ function App() {
 
   return (
     <main className="min-h-screen bg-canvas text-ink font-sans">
-      <header className="sticky top-0 z-30 border-b border-white/10 bg-ink px-5 text-white shadow-md md:px-10">
-        <div className="mx-auto flex h-18 max-w-360 items-center justify-between gap-4">
-          <div className="flex items-center gap-6">
+      <header className="sticky top-0 z-30 glass-header px-4 py-2.5 text-white md:px-8 transition-all duration-300">
+        <div className="mx-auto flex h-14 max-w-360 items-center justify-between gap-4">
+          <div className="flex items-center gap-8">
             <a
-              className="flex shrink-0 items-center gap-2.5 text-xl font-extrabold tracking-tight"
+              className="group flex shrink-0 items-center gap-3 text-lg font-black tracking-tight transition-transform duration-200 hover:scale-[1.02]"
               href="#workspace"
               onClick={() => setActiveSection("workspace")}
             >
-              <span className="grid size-8 place-items-center rounded-xl bg-mint text-xs font-black text-ink">A</span>
-              Ather<span className="text-mint">OS</span>
+              <AtherLogo className="size-9" />
+              <div className="flex items-center gap-1.5">
+                <span className="bg-gradient-to-r from-white via-white to-white/80 bg-clip-text text-transparent font-black">Ather</span>
+                <span className="bg-gradient-to-r from-mint via-emerald-300 to-mint bg-clip-text text-transparent font-extrabold">OS</span>
+                <span className="ml-1 rounded-md border border-mint/30 bg-mint/10 px-1.5 py-0.5 text-[10px] font-bold text-mint uppercase tracking-wider">
+                  v0.1
+                </span>
+              </div>
             </a>
-            <nav className="hidden h-full items-center gap-1 sm:flex">
+
+            <nav className="hidden items-center gap-1.5 rounded-2xl border border-white/10 bg-white/[0.04] p-1.5 backdrop-blur-md sm:flex">
               <a
-                className={`nav-link ${activeSection === "workspace" ? "aria-current-page" : ""}`}
+                className={`nav-pill ${activeSection === "workspace" ? "aria-current-page" : ""}`}
                 href="#workspace"
                 onClick={() => setActiveSection("workspace")}
               >
+                <svg className="size-3.5 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>
                 Workspace
               </a>
               <a
-                className={`nav-link ${activeSection === "builder" ? "aria-current-page" : ""}`}
+                className={`nav-pill ${activeSection === "builder" ? "aria-current-page" : ""}`}
                 href="#builder"
                 onClick={() => setActiveSection("builder")}
               >
+                <svg className="size-3.5 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M11 4a2 2 0 114 0v1a2 2 0 01-2 2 2 2 0 01-2-2V4zm-6 8a2 2 0 114 0v1a2 2 0 01-2 2 2 2 0 01-2-2v-1zm12 0a2 2 0 114 0v1a2 2 0 01-2 2 2 2 0 01-2-2v-1zM4 20h16" /></svg>
                 Builder
               </a>
               <a
-                className={`nav-link ${activeSection === "run-status" ? "aria-current-page" : ""}`}
+                className={`nav-pill ${activeSection === "run-status" ? "aria-current-page" : ""}`}
                 href="#run-status"
                 onClick={() => setActiveSection("run-status")}
               >
+                <svg className="size-3.5 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
                 Activity & Results
               </a>
             </nav>
           </div>
 
           <div className="flex items-center gap-3">
-            <span className="hidden rounded-full border border-white/15 bg-white/10 px-3 py-1.5 text-xs font-semibold text-white/80 md:block">
-              Local Engine v0.1.0
-            </span>
+            <div className="status-badge hidden md:flex">
+              <span className="relative flex size-2">
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-emerald-400 opacity-75"></span>
+                <span className="relative inline-flex size-2 rounded-full bg-emerald-400"></span>
+              </span>
+              <span>Local Engine v0.1.0</span>
+            </div>
+
             <button
               onClick={submitWorkflow}
               disabled={isSubmitting}
-              className="rounded-xl bg-mint px-4 py-2.5 text-xs font-extrabold text-ink transition hover:bg-mint/90 disabled:opacity-60"
+              className="cta-run-btn"
             >
-              {isSubmitting ? "Starting…" : "Run Workflow"}
+              {isSubmitting ? (
+                <>
+                  <svg className="size-3.5 animate-spin" viewBox="0 0 24 24" fill="none">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z" />
+                  </svg>
+                  <span>Starting…</span>
+                </>
+              ) : (
+                <>
+                  <svg className="size-3.5" fill="currentColor" viewBox="0 0 24 24">
+                    <path d="M8 5v14l11-7z" />
+                  </svg>
+                  <span>Run Workflow</span>
+                </>
+              )}
             </button>
+
             <button
               onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
-              className="grid size-9 place-items-center rounded-lg border border-white/20 text-white sm:hidden"
+              className="grid size-9 place-items-center rounded-xl border border-white/15 bg-white/5 text-white transition hover:bg-white/15 sm:hidden"
               aria-label="Toggle menu"
             >
               {mobileMenuOpen ? "✕" : "☰"}
@@ -351,35 +383,38 @@ function App() {
         </div>
 
         {mobileMenuOpen && (
-          <nav className="flex flex-col gap-2 border-t border-white/10 py-3 sm:hidden">
+          <nav className="mt-2 flex flex-col gap-1.5 rounded-2xl border border-white/10 bg-ink/95 p-3 backdrop-blur-xl sm:hidden">
             <a
-              className="px-3 py-2 text-sm font-semibold text-white hover:bg-white/10 rounded-lg"
+              className={`nav-pill justify-start ${activeSection === "workspace" ? "aria-current-page" : ""}`}
               href="#workspace"
               onClick={() => {
                 setActiveSection("workspace");
                 setMobileMenuOpen(false);
               }}
             >
+              <svg className="size-4 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10" /></svg>
               Workspace
             </a>
             <a
-              className="px-3 py-2 text-sm font-semibold text-white hover:bg-white/10 rounded-lg"
+              className={`nav-pill justify-start ${activeSection === "builder" ? "aria-current-page" : ""}`}
               href="#builder"
               onClick={() => {
                 setActiveSection("builder");
                 setMobileMenuOpen(false);
               }}
             >
+              <svg className="size-4 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M11 4a2 2 0 114 0v1a2 2 0 01-2 2 2 2 0 01-2-2V4zm-6 8a2 2 0 114 0v1a2 2 0 01-2 2 2 2 0 01-2-2v-1zm12 0a2 2 0 114 0v1a2 2 0 01-2 2 2 2 0 01-2-2v-1zM4 20h16" /></svg>
               Builder
             </a>
             <a
-              className="px-3 py-2 text-sm font-semibold text-white hover:bg-white/10 rounded-lg"
+              className={`nav-pill justify-start ${activeSection === "run-status" ? "aria-current-page" : ""}`}
               href="#run-status"
               onClick={() => {
                 setActiveSection("run-status");
                 setMobileMenuOpen(false);
               }}
             >
+              <svg className="size-4 opacity-70" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth="2"><path strokeLinecap="round" strokeLinejoin="round" d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
               Activity & Results
             </a>
           </nav>
